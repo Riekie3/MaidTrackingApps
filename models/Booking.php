@@ -133,4 +133,71 @@ class Booking
         $stmt->execute([$clientId]);
         return $stmt->fetchAll();
     }
+
+    // --- Reports (Phase 3) -------------------------------------------------
+
+    public static function countsByAgency(int $agencyId): array
+    {
+        $stmt = getDB()->prepare('SELECT status, COUNT(*) AS c FROM bookings WHERE agency_id = ? GROUP BY status');
+        $stmt->execute([$agencyId]);
+        $counts = ['requested' => 0, 'accepted' => 0, 'completed' => 0, 'declined' => 0, 'cancelled' => 0];
+        foreach ($stmt->fetchAll() as $row) {
+            $counts[$row['status']] = (int) $row['c'];
+        }
+        return $counts;
+    }
+
+    // % of this agency's clients who have booked more than once — a
+    // simple repeat-business signal for the performance report.
+    public static function repeatClientRate(int $agencyId): ?float
+    {
+        $stmt = getDB()->prepare(
+            "SELECT COUNT(*) AS total_clients, SUM(bookings_per_client > 1) AS repeat_clients FROM (
+                SELECT client_id, COUNT(*) AS bookings_per_client FROM bookings
+                WHERE agency_id = ? AND status IN ('accepted','completed')
+                GROUP BY client_id
+             ) t"
+        );
+        $stmt->execute([$agencyId]);
+        $row = $stmt->fetch();
+        $total = (int) ($row['total_clients'] ?? 0);
+        if ($total === 0) {
+            return null;
+        }
+        return round((((int) ($row['repeat_clients'] ?? 0)) / $total) * 100, 1);
+    }
+
+    // Accepted+completed placements per month, most recent $months first.
+    public static function monthlyPlacements(int $agencyId, int $months = 6): array
+    {
+        $stmt = getDB()->prepare(
+            "SELECT DATE_FORMAT(created_at, '%Y-%m') AS ym, COUNT(*) AS c
+             FROM bookings
+             WHERE agency_id = ? AND status IN ('accepted','completed')
+               AND created_at >= DATE_SUB(CURDATE(), INTERVAL ? MONTH)
+             GROUP BY ym ORDER BY ym ASC"
+        );
+        $stmt->execute([$agencyId, $months]);
+        $byMonth = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $byMonth[$row['ym']] = (int) $row['c'];
+        }
+
+        $series = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $ym = date('Y-m', strtotime("-$i months"));
+            $series[$ym] = $byMonth[$ym] ?? 0;
+        }
+        return $series;
+    }
+
+    public static function globalCountsByStatus(): array
+    {
+        $stmt = getDB()->query('SELECT status, COUNT(*) AS c FROM bookings GROUP BY status');
+        $counts = ['requested' => 0, 'accepted' => 0, 'completed' => 0, 'declined' => 0, 'cancelled' => 0];
+        foreach ($stmt->fetchAll() as $row) {
+            $counts[$row['status']] = (int) $row['c'];
+        }
+        return $counts;
+    }
 }

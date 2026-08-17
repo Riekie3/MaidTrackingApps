@@ -272,6 +272,28 @@ class Housemaid
         return ['rows' => $stmt->fetchAll(), 'total' => $total];
     }
 
+    // --- Reports (Phase 3) -------------------------------------------------
+
+    public static function monthlySubmissions(int $months = 6): array
+    {
+        $stmt = getDB()->prepare(
+            "SELECT DATE_FORMAT(submitted_at, '%Y-%m') AS ym, COUNT(*) AS c
+             FROM housemaids WHERE submitted_at >= DATE_SUB(CURDATE(), INTERVAL ? MONTH)
+             GROUP BY ym ORDER BY ym ASC"
+        );
+        $stmt->execute([$months]);
+        $byMonth = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $byMonth[$row['ym']] = (int) $row['c'];
+        }
+        $series = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $ym = date('Y-m', strtotime("-$i months"));
+            $series[$ym] = $byMonth[$ym] ?? 0;
+        }
+        return $series;
+    }
+
     // Approved-only lookup for anything client-facing — a pending or
     // rejected housemaid is never reachable by ID from the client side.
     public static function publicFindById(int $id): ?array

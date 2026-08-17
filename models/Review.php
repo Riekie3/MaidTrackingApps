@@ -60,4 +60,27 @@ class Review
         getDB()->prepare('UPDATE housemaids SET avg_rating = ?, ratings_count = ? WHERE id = ?')
             ->execute([$avg, $count, $housemaidId]);
     }
+
+    // Per-category breakdown for the due-diligence report.
+    public static function categoryAverages(int $housemaidId): ?array
+    {
+        $stmt = getDB()->prepare(
+            'SELECT AVG(rating_reliability) AS reliability, AVG(rating_skill) AS skill,
+                    AVG(rating_hygiene) AS hygiene, AVG(rating_communication) AS communication,
+                    COUNT(*) AS n
+             FROM reviews WHERE housemaid_id = ?'
+        );
+        $stmt->execute([$housemaidId]);
+        $row = $stmt->fetch();
+        if (!$row || (int) $row['n'] === 0) {
+            return null;
+        }
+        return [
+            'reliability' => round((float) $row['reliability'], 1),
+            'skill' => round((float) $row['skill'], 1),
+            'hygiene' => round((float) $row['hygiene'], 1),
+            'communication' => round((float) $row['communication'], 1),
+            'n' => (int) $row['n'],
+        ];
+    }
 }

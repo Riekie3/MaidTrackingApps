@@ -49,6 +49,7 @@ $base = rtrim(APP_URL, '/');
                 <a href="<?= e($base) ?>/admin/agencies_pending.php">Agencies</a>
                 <a href="<?= e($base) ?>/admin/housemaids_pending.php">Housemaids</a>
                 <a href="<?= e($base) ?>/admin/master_data.php">Master Data</a>
+                <a href="<?= e($base) ?>/admin/report_overview.php">Reports</a>
                 <a href="<?= e($base) ?>/admin/audit_log.php">Audit Log</a>
                 <a class="signout" href="<?= e($base) ?>/logout.php">Sign out</a>
             </div>
@@ -57,6 +58,7 @@ $base = rtrim(APP_URL, '/');
                 <a href="<?= e($base) ?>/agency/index.php">Dashboard</a>
                 <a href="<?= e($base) ?>/agency/housemaids.php">Roster</a>
                 <a href="<?= e($base) ?>/agency/bookings.php">Bookings</a>
+                <a href="<?= e($base) ?>/agency/reports.php">Reports</a>
                 <a href="<?= e($base) ?>/agency/profile.php">Agency Profile</a>
                 <a class="signout" href="<?= e($base) ?>/logout.php">Sign out</a>
             </div>

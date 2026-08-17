@@ -32,6 +32,7 @@ require __DIR__ . '/../includes/header.php';
             <h1>My bookings</h1>
             <p><?= count($bookings) ?> total</p>
         </div>
+        <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/client/report_bookings.php">Booking history report</a>
     </div>
 
     <div class="table-wrap">

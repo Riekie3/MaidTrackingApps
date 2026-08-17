@@ -37,7 +37,10 @@ require __DIR__ . '/../includes/header.php';
                 · <span class="pill <?= e($hm['availability_status']) ?>"><?= e(ucfirst(str_replace('_', ' ', $hm['availability_status']))) ?></span>
             </p>
         </div>
-        <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/client/browse.php">← Back to browse</a>
+        <div class="btn-row">
+            <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/client/report_due_diligence.php?id=<?= (int) $hm['id'] ?>">Due-diligence report</a>
+            <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/client/browse.php">← Back to browse</a>
+        </div>
     </div>
 
     <div class="card" style="margin-bottom:22px;">

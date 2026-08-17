@@ -113,3 +113,39 @@ function promote_upload(string $tmpFilename, string $destDir): ?string
     $to = rtrim($destDir, '/') . '/' . $tmpFilename;
     return rename($from, $to) ? $tmpFilename : null;
 }
+
+// --- Reports (Phase 3) ----------------------------------------------------
+// No PDF library — reports are print-styled HTML (see the @media print
+// rules in app.css) with a browser "Print / Save as PDF" button, same
+// approach as Car Maintenance Tracker. Keeps the stack dependency-free.
+
+// Guards against CSV/formula injection: a cell starting with =, +, -, or
+// @ gets a leading single quote so Excel/Sheets never executes it as a
+// formula when the export is opened.
+function csv_safe(?string $value): string
+{
+    $value = $value ?? '';
+    if ($value !== '' && in_array($value[0], ['=', '+', '-', '@'], true)) {
+        return "'" . $value;
+    }
+    return $value;
+}
+
+// Streams $rows (array of associative arrays) as a CSV download and
+// exits. $headers maps column keys to display labels, in output order.
+function csv_download(string $filename, array $headers, array $rows): never
+{
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, array_values($headers));
+    foreach ($rows as $row) {
+        $line = [];
+        foreach (array_keys($headers) as $key) {
+            $line[] = csv_safe((string) ($row[$key] ?? ''));
+        }
+        fputcsv($out, $line);
+    }
+    fclose($out);
+    exit;
+}
