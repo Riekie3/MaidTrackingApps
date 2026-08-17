@@ -102,6 +102,14 @@ Working now:
   (Apache can't see `$_SERVER['HTTPS']` when Cloudflare terminates TLS
   at its edge and forwards plain HTTP) — every generated link was
   coming out `http://` on an `https://` page before this.
+- **Full demo dataset** (`scripts/seed_demo_data.php`) — see step 5
+  below. Housemaid photos now render on Browse and the candidate
+  profile (synthetic initials-avatars, not real people — this demo
+  attaches invented incident reports to these profiles) with computed
+  age shown alongside.
+- **Dark mode is opt-in, not automatic** — no longer follows the OS/
+  browser preference; light is always the default until the header
+  toggle is clicked, on the project owner's instruction.
 
 Not built yet (next phases):
 - **Phase 5, remainder** — actual cPanel hosting, on hold until the
@@ -141,12 +149,23 @@ Not built yet (next phases):
      php -r "echo bin2hex(random_bytes(32));"
      ```
    Both files are gitignored — never commit real credentials or keys.
-5. **Open the app**: `http://localhost/MaidTrackingApps/` — you'll land on
-   the login page. Admin login credentials are in `CREDENTIALS.md`
-   (gitignored, local only — not in this repo). Register a test agency at
-   `/agency/register.php` and approve it as Admin, then a test client at
-   `/client/register.php` and verify it (see "OTP in dev mode" below)
-   before either can do anything else.
+5. **Seed a full demo dataset** (optional but recommended for exploring
+   the app — otherwise you're starting from an empty roster):
+   ```bash
+   php scripts/seed_demo_data.php
+   ```
+   Creates 4 agencies, 8 housemaids (every approval/availability state),
+   4 clients, 6 bookings, 2 reviews, and all 4 incident-workflow states —
+   run through the real models (not raw SQL), so passport encryption and
+   password hashing both work regardless of your local
+   `config/secrets.php` key. Full login list in `CREDENTIALS.md` and the
+   Phase Plan document's "Live Demo Credentials" section.
+6. **Open the app**: `http://localhost/MaidTrackingApps/` — you'll land
+   on the login page. Admin credentials are in `CREDENTIALS.md`
+   (gitignored, local only — not in this repo). Without the demo seed,
+   register a test agency at `/agency/register.php` and approve it as
+   Admin, then a test client at `/client/register.php` and verify it
+   (see "OTP in dev mode" below) before either can do anything else.
 
 ## OTP in dev mode
 
@@ -240,7 +259,8 @@ into a throwaway database, and confirmed row counts matched.
 
 ```
 /config      app config (database.php and secrets.php are both gitignored)
-/database    schema.sql, seed_master_data.sql, seed_admin.sql, migrate_phaseN.sql, backups/ (gitignored)
+/database    schema.sql, seed_master_data.sql, seed_admin.sql, migrate_phaseN.sql,
+             demo_assets/avatars/ (versioned demo photos), backups/ (gitignored)
 /includes    bootstrap.php (require chain), auth.php (also login rate-limiting), functions.php
              (also encryption + protected-file streaming), header/footer.php
 /models      PDO data-access classes — Admin, Agency, Housemaid, HousemaidDocument, MasterData,
@@ -253,7 +273,7 @@ into a throwaway database, and confirmed row counts matched.
 /assets      css/app.css (pastel design system + dark mode), js/app.js (bulk-select, theme toggle, SW registration), icons/ (PWA icons)
 /uploads     housemaid/agency/incident files (gitignored; .htaccess denies direct access) — never
              linked directly, always served through download.php
-/scripts     dev/ops tools (generate_icons.php, backup_db.sh)
+/scripts     dev/ops tools (generate_icons.php, backup_db.sh, seed_demo_data.php)
 download.php, manifest.json, sw.js, offline.html   protected file gateway + PWA shell
 ```
 
