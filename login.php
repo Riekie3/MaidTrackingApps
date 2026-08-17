@@ -1,0 +1,72 @@
+<?php
+require_once __DIR__ . '/includes/bootstrap.php';
+
+if (is_logged_in()) {
+    redirect(dashboard_url_for(current_role()));
+}
+
+$errors = [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if ($email === '' || $password === '') {
+        $errors[] = 'Enter both email and password.';
+    } else {
+        $admin = Admin::findByEmail($email);
+        if ($admin && password_verify($password, $admin['password_hash'])) {
+            login_as('admin', (int) $admin['id'], $admin['name']);
+            redirect(dashboard_url_for('admin'));
+        }
+
+        $agency = Agency::findByEmail($email);
+        if ($agency && password_verify($password, $agency['password_hash'])) {
+            if ($agency['approval_status'] === 'pending') {
+                $errors[] = 'Your agency registration is still awaiting Admin approval. You\'ll be able to log in once it\'s approved.';
+            } elseif ($agency['approval_status'] === 'rejected') {
+                $errors[] = 'Your agency registration was not approved' . ($agency['rejection_reason'] ? ': ' . $agency['rejection_reason'] : '.') . ' Contact the platform admin for details.';
+            } else {
+                login_as('agency', (int) $agency['id'], $agency['company_name']);
+                redirect(dashboard_url_for('agency'));
+            }
+        }
+
+        if (empty($errors)) {
+            $errors[] = 'Incorrect email or password.';
+        }
+    }
+}
+
+$pageTitle = 'Log in';
+require __DIR__ . '/includes/header.php';
+?>
+<div class="auth-wrap">
+    <div class="auth-card">
+        <h1>Welcome back</h1>
+        <p class="sub">Log in to MaidTrack</p>
+
+        <?php foreach ($errors as $error): ?>
+            <div class="alert error"><?= e($error) ?></div>
+        <?php endforeach; ?>
+
+        <form method="post" novalidate>
+            <?= csrf_field() ?>
+            <div class="field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required autofocus value="<?= e($_POST['email'] ?? '') ?>">
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Log in</button>
+        </form>
+
+        <div class="auth-links">
+            Housemaid agency? <a href="<?= e(rtrim(APP_URL, '/')) ?>/agency/register.php">Register here</a>
+        </div>
+    </div>
+</div>
+<?php require __DIR__ . '/includes/footer.php'; ?>

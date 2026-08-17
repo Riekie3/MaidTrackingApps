@@ -1,6 +1,25 @@
 <?php
 // Application-wide constants. Safe to tweak per environment.
 
+// Derived from the request so this works unchanged whether it's served
+// from XAMPP's htdocs (e.g. /MaidTrackingApps), a bare vhost, or a
+// production domain — no hardcoded path to break when the environment
+// changes.
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+// String-based, not dirname() — PHP's dirname() on Windows returns a bare
+// "\" for a single-segment path like "/admin", which would otherwise leak
+// a literal backslash into every generated URL.
+$scriptDir = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+$scriptDir = substr($scriptDir, 0, strrpos($scriptDir, '/'));
+// Pages under /admin, /agency, or /client need the app root, not their own folder.
+$lastSegment = substr($scriptDir, strrpos($scriptDir, '/') + 1);
+if (in_array($lastSegment, ['admin', 'agency', 'client'], true)) {
+    $scriptDir = substr($scriptDir, 0, strrpos($scriptDir, '/'));
+}
+define('APP_URL', $scheme . '://' . $host . $scriptDir);
+
 define('APP_NAME', 'MaidTrack');
 define('APP_TIMEZONE', 'Asia/Kuala_Lumpur');
 define('DATE_FORMAT_DISPLAY', 'd/m/Y');
