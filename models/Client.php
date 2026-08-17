@@ -5,8 +5,8 @@ class Client
     public static function create(array $data): int
     {
         $stmt = getDB()->prepare(
-            'INSERT INTO clients (name, email, phone, password_hash, address)
-             VALUES (:name, :email, :phone, :password_hash, :address)'
+            'INSERT INTO clients (name, email, phone, password_hash, address, consent_given_at)
+             VALUES (:name, :email, :phone, :password_hash, :address, NOW())'
         );
         $stmt->execute($data);
         return (int) getDB()->lastInsertId();

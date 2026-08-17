@@ -14,15 +14,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($email === '' || $password === '') {
         $errors[] = 'Enter both email and password.';
+    } elseif (is_login_locked_out($email)) {
+        $errors[] = 'Too many failed attempts for this account. Try again in ' . LOGIN_LOCKOUT_MINUTES . ' minutes.';
     } else {
+        $validCredentials = false;
+
         $admin = Admin::findByEmail($email);
         if ($admin && password_verify($password, $admin['password_hash'])) {
+            $validCredentials = true;
             login_as('admin', (int) $admin['id'], $admin['name']);
             redirect(dashboard_url_for('admin'));
         }
 
         $agency = Agency::findByEmail($email);
         if ($agency && password_verify($password, $agency['password_hash'])) {
+            $validCredentials = true;
             if ($agency['approval_status'] === 'pending') {
                 $errors[] = 'Your agency registration is still awaiting Admin approval. You\'ll be able to log in once it\'s approved.';
             } elseif ($agency['approval_status'] === 'rejected') {
@@ -35,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $client = Client::findByEmail($email);
         if ($client && password_verify($password, $client['password_hash'])) {
+            $validCredentials = true;
             if ($client['status'] === 'pending_verification') {
                 $_SESSION['pending_client_id'] = (int) $client['id'];
                 redirect(rtrim(APP_URL, '/') . '/client/verify.php');
@@ -46,7 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if (empty($errors)) {
+        if (!$validCredentials) {
+            record_failed_login($email);
             $errors[] = 'Incorrect email or password.';
         }
     }

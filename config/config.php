@@ -29,6 +29,7 @@ define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('UPLOAD_TMP_DIR', __DIR__ . '/../uploads/tmp/');
 define('UPLOAD_HOUSEMAID_DIR', __DIR__ . '/../uploads/housemaids/');
 define('UPLOAD_AGENCY_DIR', __DIR__ . '/../uploads/agencies/');
+define('UPLOAD_INCIDENT_DIR', __DIR__ . '/../uploads/incidents/');
 define('UPLOAD_MAX_SIZE', 10 * 1024 * 1024); // 10MB
 define('UPLOAD_ALLOWED_TYPES', ['pdf', 'jpg', 'jpeg', 'png']);
 
@@ -40,6 +41,12 @@ define('OTP_TTL_MINUTES', 10);
 // owning agency, Admin, and a client with a confirmed booking. See the
 // "Trust & data risk" section of the platform proposal.
 define('PASSPORT_MASK_VISIBLE_CHARS', 4);
+
+// Login rate-limiting — keyed by the email that was tried, not by IP,
+// so it directly protects a specific account from a password-guessing
+// script regardless of how many addresses it's spread across.
+define('LOGIN_MAX_ATTEMPTS', 5);
+define('LOGIN_LOCKOUT_MINUTES', 15);
 
 date_default_timezone_set(APP_TIMEZONE);
 

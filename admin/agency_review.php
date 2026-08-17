@@ -58,7 +58,7 @@ require __DIR__ . '/../includes/header.php';
     <div class="card" style="margin-bottom:20px;">
         <h2>License document</h2>
         <?php if ($agency['license_document_path']): ?>
-            <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/uploads/agencies/<?= e($agency['license_document_path']) ?>" target="_blank" rel="noopener">View document</a>
+            <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/download.php?kind=agency_license&id=<?= (int) $agency['id'] ?>" target="_blank" rel="noopener">View document</a>
         <?php else: ?>
             <p class="muted">No document on file.</p>
         <?php endif; ?>

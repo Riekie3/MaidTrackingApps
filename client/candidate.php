@@ -14,6 +14,7 @@ $skills = Housemaid::getSkillNames($id);
 $languages = Housemaid::getLanguageNames($id);
 $reviews = Review::listForHousemaid($id);
 $qualifies = Booking::hasQualifyingBooking($clientId, $id);
+$verifiedIncidents = Incident::listVerifiedForHousemaid($id);
 
 // Any existing non-terminal request from this client for this housemaid?
 $existing = null;
@@ -56,6 +57,19 @@ require __DIR__ . '/../includes/header.php';
         <?php endif; ?>
     </div>
 
+    <?php if ($verifiedIncidents): ?>
+    <div class="card" style="margin-bottom:22px;border-color:var(--danger);background:var(--danger-soft);">
+        <h2 style="color:var(--danger);">Verified incidents</h2>
+        <?php foreach ($verifiedIncidents as $inc): ?>
+        <div style="border-top:1px solid var(--line-strong);padding:10px 0;">
+            <strong><?= e(ucwords(str_replace('_', ' ', $inc['incident_type']))) ?></strong>
+            <span class="muted"> — <?= fmt_date($inc['created_at']) ?></span>
+            <p style="margin:4px 0 0;"><?= nl2br(e($inc['description'])) ?></p>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
     <div class="card" style="margin-bottom:22px;">
         <h2>Book her</h2>
         <?php if ($existing): ?>
@@ -92,5 +106,11 @@ require __DIR__ . '/../includes/header.php';
             </div>
         <?php endforeach; ?>
     </div>
+
+    <?php if ($qualifies): ?>
+    <p class="no-print" style="margin-top:18px;">
+        <a class="btn btn-sm btn-ghost" href="<?= e(rtrim(APP_URL, '/')) ?>/client/incident_report.php?housemaid_id=<?= (int) $id ?>">Report an incident</a>
+    </p>
+    <?php endif; ?>
 </div>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

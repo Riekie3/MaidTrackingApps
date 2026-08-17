@@ -4,6 +4,10 @@ class Housemaid
 {
     public static function create(array $core): int
     {
+        // Encrypted at rest — see encrypt_field() in functions.php.
+        $core['passport_number'] = encrypt_field($core['passport_number'] ?? null);
+        $core['national_id_number'] = encrypt_field($core['national_id_number'] ?? null);
+
         $stmt = getDB()->prepare(
             'INSERT INTO housemaids
                 (agency_id, full_name, photo_path, date_of_birth, gender, nationality_country_id,
@@ -56,7 +60,13 @@ class Housemaid
              WHERE h.id = ?'
         );
         $stmt->execute([$id]);
-        return $stmt->fetch() ?: null;
+        $row = $stmt->fetch();
+        if (!$row) {
+            return null;
+        }
+        $row['passport_number'] = decrypt_field($row['passport_number']);
+        $row['national_id_number'] = decrypt_field($row['national_id_number']);
+        return $row;
     }
 
     public static function findByIdForAgency(int $id, int $agencyId): ?array

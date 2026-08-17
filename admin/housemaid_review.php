@@ -79,7 +79,7 @@ require __DIR__ . '/../includes/header.php';
                     <div class="doc-type"><?= e(ucwords(str_replace('_', ' ', $doc['doc_type']))) ?></div>
                     <div class="doc-meta">Expiry: <?= fmt_date($doc['expiry_date']) ?></div>
                 </div>
-                <a class="btn btn-sm btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/uploads/housemaids/<?= e($doc['file_path']) ?>" target="_blank" rel="noopener">View file</a>
+                <a class="btn btn-sm btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/download.php?kind=housemaid_doc&id=<?= (int) $doc['id'] ?>" target="_blank" rel="noopener">View file</a>
             </div>
             <?php endforeach; ?>
             <?php if (!$documents): ?><p class="muted">No documents uploaded.</p><?php endif; ?>

@@ -1,0 +1,17 @@
+# Blocks all direct web access to uploaded documents/photos on real
+# Apache hosting (XAMPP htdocs, cPanel). Every file must go through
+# download.php, which checks role + ownership before streaming it.
+#
+# Note: PHP's built-in dev server (`php -S`) does NOT read .htaccess at
+# all — it isn't Apache — so this rule has no effect there. The real
+# access control is enforced in PHP (stream_protected_file() +
+# download.php's own checks), which works identically on every server;
+# this file is defense-in-depth for the servers that do honor it.
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>

@@ -149,3 +149,63 @@ function csv_download(string $filename, array $headers, array $rows): never
     fclose($out);
     exit;
 }
+
+// --- Field-level encryption (Phase 4) -------------------------------------
+// AES-256-GCM for passport_number / national_id_number at rest — see
+// ENCRYPTION_KEY in config/secrets.php. Storage format is a single
+// base64 string of iv . tag . ciphertext, so it's one column, no schema
+// change beyond what was already there.
+
+function encrypt_field(?string $plain): ?string
+{
+    if ($plain === null || $plain === '') {
+        return null;
+    }
+    $key = hex2bin(ENCRYPTION_KEY);
+    $iv = random_bytes(12);
+    $tag = '';
+    $cipher = openssl_encrypt($plain, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
+    return base64_encode($iv . $tag . $cipher);
+}
+
+function decrypt_field(?string $stored): ?string
+{
+    if ($stored === null || $stored === '') {
+        return null;
+    }
+    $raw = base64_decode($stored, true);
+    if ($raw === false || strlen($raw) < 28) {
+        return null; // not valid ciphertext — e.g. pre-encryption legacy data
+    }
+    $key = hex2bin(ENCRYPTION_KEY);
+    $iv = substr($raw, 0, 12);
+    $tag = substr($raw, 12, 16);
+    $cipher = substr($raw, 28);
+    $plain = openssl_decrypt($cipher, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
+    return $plain === false ? null : $plain;
+}
+
+// --- Protected file serving (Phase 4) -------------------------------------
+// Everything under /uploads is blocked from direct web access (see
+// uploads/.htaccess) on real Apache hosting; this is what actually
+// enforces access control either way, since it runs in PHP regardless
+// of web server. Never trust the extension a file was uploaded with —
+// re-derive the MIME type from the fixed allow-list.
+
+function stream_protected_file(string $absolutePath): never
+{
+    if (!is_file($absolutePath)) {
+        http_response_code(404);
+        die('File not found.');
+    }
+    $ext = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
+    $mimeMap = ['pdf' => 'application/pdf', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png'];
+    $mime = $mimeMap[$ext] ?? 'application/octet-stream';
+
+    header('Content-Type: ' . $mime);
+    header('Content-Disposition: inline; filename="' . basename($absolutePath) . '"');
+    header('X-Content-Type-Options: nosniff');
+    header('Cache-Control: private, no-store');
+    readfile($absolutePath);
+    exit;
+}

@@ -77,3 +77,23 @@ function verify_csrf(): void
         die('Session expired — please go back and try again.');
     }
 }
+
+// --- Login rate-limiting ------------------------------------------------
+// Keyed by email (LOGIN_MAX_ATTEMPTS/LOGIN_LOCKOUT_MINUTES in config.php),
+// not by session, so it survives a cleared cookie and applies regardless
+// of which browser/device the attempts come from.
+
+function is_login_locked_out(string $email): bool
+{
+    $stmt = getDB()->prepare(
+        'SELECT COUNT(*) FROM login_attempts WHERE identifier = ? AND attempted_at > DATE_SUB(NOW(), INTERVAL ? MINUTE)'
+    );
+    $stmt->execute([strtolower($email), LOGIN_LOCKOUT_MINUTES]);
+    return ((int) $stmt->fetchColumn()) >= LOGIN_MAX_ATTEMPTS;
+}
+
+function record_failed_login(string $email): void
+{
+    $stmt = getDB()->prepare('INSERT INTO login_attempts (identifier, ip_address) VALUES (?, ?)');
+    $stmt->execute([strtolower($email), $_SERVER['REMOTE_ADDR'] ?? null]);
+}

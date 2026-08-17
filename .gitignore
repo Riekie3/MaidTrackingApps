@@ -1,6 +1,9 @@
 # Local environment config (copy config/database.example.php to config/database.php)
 config/database.php
 
+# Field-encryption key (copy config/secrets.example.php to config/secrets.php)
+config/secrets.php
+
 # Real login credentials for local dev accounts — never commit
 CREDENTIALS.md
 

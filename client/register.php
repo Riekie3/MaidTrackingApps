@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($phone === '') $errors[] = 'Phone number is required.';
     if (strlen($password) < 8) $errors[] = 'Password must be at least 8 characters.';
     if ($password !== $confirm) $errors[] = 'Passwords do not match.';
+    if (!isset($_POST['consent'])) $errors[] = 'PDPA consent is required to create an account.';
 
     if (!$errors && Client::findByEmail($email)) {
         $errors[] = 'An account with this email already exists.';
@@ -80,6 +81,10 @@ require __DIR__ . '/../includes/header.php';
             <div class="field">
                 <label for="password_confirm">Confirm password</label>
                 <input type="password" id="password_confirm" name="password_confirm" required minlength="8">
+            </div>
+            <div class="checkbox-item" style="margin-bottom:16px;">
+                <input type="checkbox" id="consent" name="consent" <?= isset($old['consent']) ? 'checked' : '' ?>>
+                <label for="consent" style="font-weight:400;">I consent to MaidTrack collecting and using my personal data to provide this service, in line with Malaysia's PDPA 2010.</label>
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%;">Create account</button>
         </form>

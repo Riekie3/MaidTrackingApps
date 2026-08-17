@@ -14,12 +14,8 @@ $languages = Housemaid::getLanguageNames($id);
 $breakdown = Review::categoryAverages($id);
 
 // Verified incidents only — Reported/Under Review claims never appear
-// here, or anywhere client-facing. See the proposal's "Handle with
-// care" note. No incident-reporting UI exists yet (Phase 4), so this
-// will always read empty for now — the query is real, not a stub.
-$incidentsStmt = getDB()->prepare("SELECT * FROM incidents WHERE housemaid_id = ? AND status = 'verified' ORDER BY created_at DESC");
-$incidentsStmt->execute([$id]);
-$incidents = $incidentsStmt->fetchAll();
+// here, or anywhere client-facing. See the proposal's "Handle with care" note.
+$incidents = Incident::listVerifiedForHousemaid($id);
 
 $pageTitle = 'Due-Diligence Report — ' . $hm['full_name'];
 require __DIR__ . '/../includes/header.php';
