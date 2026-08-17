@@ -14,7 +14,7 @@ Full scope, role breakdown, and design decisions live in the platform
 proposal shared with the project owner — this README covers what's
 actually built and how to run it.
 
-## Status: Phase 2 — Client marketplace
+## Status: Phase 3 — Reporting
 
 Working now:
 - Full database schema (`database/schema.sql`) — agencies, admins, clients,
@@ -64,10 +64,17 @@ Working now:
   completed booking; the housemaid's aggregate rating recalculates the
   moment a review lands, and the agency can post one response per review
   from her profile page.
+- **Reports**, all print-styled HTML ("Print / Save as PDF" button) plus
+  CSV where it's a list — no PDF library, same approach as Car
+  Maintenance Tracker. Client: due-diligence report per candidate
+  (rating breakdown, always-redacted passport/address), booking history.
+  Agency (`agency/reports.php`): roster & compliance (passport/work-permit
+  expiry, colour-coded), performance (placements chart, rating, repeat-
+  client rate). Admin: platform overview (counts by status, 6-month
+  growth chart). Charts use Chart.js from a CDN — the only external
+  script this project loads; everything else is self-contained.
 
 Not built yet (next phases):
-- **Phase 3** — Reports (due-diligence PDF, roster/compliance, agency
-  performance, admin overview).
 - **Phase 4** — Security hardening (passport masking, consent capture,
   upload/auth pass).
 - **Phase 5** — cPanel deploy.
@@ -148,10 +155,11 @@ proposal.
 /includes    bootstrap.php (require chain), auth.php, functions.php, header/footer.php
 /models      PDO data-access classes — Admin, Agency, Housemaid, HousemaidDocument, MasterData,
              AuditLog, Client, ClientOtp, Booking, Review
-/admin       Admin portal — dashboard, approval queues, master data, audit log
-/agency      Agency portal — register, dashboard, roster, housemaid intake wizard, profile, bookings
+/admin       Admin portal — dashboard, approval queues, master data, audit log, platform report
+/agency      Agency portal — register, dashboard, roster, housemaid intake wizard, profile, bookings,
+             reports (roster & compliance, performance)
 /client      Client portal — register, OTP verify, dashboard, browse, candidate/agency profiles,
-             booking request, booking history, reviews
+             booking request, booking history, reviews, due-diligence & booking reports
 /assets      css/app.css (pastel design system + dark mode), js/app.js (bulk-select, theme toggle, SW registration), icons/ (PWA icons)
 /uploads     housemaid/agency documents & photos (gitignored, never committed)
 /scripts     one-off dev tools (generate_icons.php)
