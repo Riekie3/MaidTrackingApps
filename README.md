@@ -40,6 +40,15 @@ Working now:
 - Custom pastel-toned CSS design system (`assets/css/app.css`) — every
   text-role colour checked against WCAG AA 4.5:1 contrast. See the
   "clean pastel" note in the proposal's interface-direction section.
+- **Dark mode** — a toggle button in the nav (every page, including
+  login/register) flips between light and dark; the choice persists
+  across visits and applies before first paint (no flash of the wrong
+  theme). Defaults to the OS setting until you pick one explicitly.
+- **PWA groundwork**, done early to make Phase 6 (Android) cheap:
+  `manifest.json`, a conservative service worker (`sw.js` — caches only
+  the static shell, never touches session pages or POSTs), a static
+  offline fallback page, and real app icons. See "Installing as an app"
+  below.
 
 Not built yet (next phases):
 - **Phase 2** — Client portal: registration/verification gate, browse &amp;
@@ -49,7 +58,8 @@ Not built yet (next phases):
 - **Phase 4** — Security hardening (passport masking, consent capture,
   upload/auth pass).
 - **Phase 5** — cPanel deploy.
-- **Phase 6** — Android (PWA first, then a WebView-wrapped APK).
+- **Phase 6** — Android: the PWA is already installable (see below); a
+  WebView-wrapped APK is the next step once the site is live.
 
 ## Installation (XAMPP)
 
@@ -77,6 +87,24 @@ Not built yet (next phases):
    `/agency/register.php`, then approve it as Admin before it can log in.
    The Client portal lands in Phase 2.
 
+## Installing as an app (PWA)
+
+Once served over `http://localhost/...` (or HTTPS in production), the
+site is installable:
+- **Android Chrome**: menu → "Install app" / "Add to Home screen".
+- **Desktop Chrome/Edge**: an install icon appears in the address bar.
+- **iOS Safari**: Share → "Add to Home Screen" (uses the Apple
+  touch-icon meta tag rather than the manifest, since iOS doesn't
+  support web app manifests the same way).
+
+If icons ever need regenerating (e.g. the primary colour changes),
+`scripts/generate_icons.php` redraws them with PHP's GD extension,
+which isn't enabled by default in a stock XAMPP install — run it with
+`-d extension=php_gd.dll` rather than editing `php.ini`:
+```bash
+php -d extension=php_gd.dll scripts/generate_icons.php
+```
+
 ## Deploying to production (cPanel)
 
 Covered in full once Phase 5 is reached, but in short: same schema import
@@ -96,8 +124,10 @@ proposal.
 /admin       Admin portal — dashboard, approval queues, master data, audit log
 /agency      Agency portal — register, dashboard, roster, housemaid intake wizard, profile
 /client      Client portal — added in Phase 2
-/assets      css/app.css (pastel design system), js/app.js (bulk-select, confirm dialogs)
+/assets      css/app.css (pastel design system + dark mode), js/app.js (bulk-select, theme toggle, SW registration), icons/ (PWA icons)
 /uploads     housemaid/agency documents & photos (gitignored, never committed)
+/scripts     one-off dev tools (generate_icons.php)
+manifest.json, sw.js, offline.html   PWA install + offline shell (see "Installing as an app")
 ```
 
 ## Data handling
