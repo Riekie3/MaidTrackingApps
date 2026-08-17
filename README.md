@@ -14,7 +14,7 @@ Full scope, role breakdown, and design decisions live in the platform
 proposal shared with the project owner — this README covers what's
 actually built and how to run it.
 
-## Status: Phase 0 — repository &amp; database scaffold
+## Status: Phase 1 — Admin + Agency core
 
 Working now:
 - Full database schema (`database/schema.sql`) — agencies, admins, clients,
@@ -22,14 +22,26 @@ Working now:
   employment history, bookings, reviews, incidents (with a
   Reported → Under Review → Verified status workflow), and an audit log.
 - Starter master data (`database/seed_master_data.sql`) — common FDW source
-  countries, skill tags, and languages, editable later from the Admin panel.
-- Config scaffold and a setup-status landing page (`index.php`) that checks
-  the database connection and table count.
+  countries, skill tags, and languages, editable from the Admin panel.
+- One login (`login.php`), role-based redirect. Agencies self-register
+  (`agency/register.php`, with a license upload) and sit **Pending** until
+  Admin approves them.
+- **Admin approval dashboard** — two queues: Agency Registrations, and
+  Housemaid Submissions grouped by agency with drill-down into full
+  profile/document review. Both support checkbox multi-select with bulk
+  approve/reject; every rejection requires a reason the agency can see.
+- **Agency roster management** — housemaids submitted through a five-step
+  intake wizard (identity, documents with per-type file uploads, address,
+  skills/languages/consent, review) and sit Pending until Admin approves.
+  Public agency profile editor.
+- Admin master-data CRUD (skills/languages/countries), an audit log of
+  every approval/rejection/edit, and passport/ID masking outside the
+  owning agency/Admin view.
+- Custom pastel-toned CSS design system (`assets/css/app.css`) — every
+  text-role colour checked against WCAG AA 4.5:1 contrast. See the
+  "clean pastel" note in the proposal's interface-direction section.
 
 Not built yet (next phases):
-- **Phase 1** — Admin + Agency portals: agency self-registration, the
-  two-queue Admin approval dashboard (agencies + housemaids, with bulk
-  approve/reject), housemaid CRUD, document upload.
 - **Phase 2** — Client portal: registration/verification gate, browse &amp;
   filter, booking requests, post-booking reviews.
 - **Phase 3** — Reports (due-diligence PDF, roster/compliance, agency
@@ -48,19 +60,22 @@ Not built yet (next phases):
 3. **Create the database.** Open phpMyAdmin (`http://localhost/phpmyadmin`),
    then either:
    - Use the "Import" tab to import `database/schema.sql`, then
-     `database/seed_master_data.sql`, **or**
+     `database/seed_master_data.sql`, then `database/seed_admin.sql`, **or**
    - Run from a terminal:
      ```bash
      mysql -u root < database/schema.sql
      mysql -u root maidtrack < database/seed_master_data.sql
+     mysql -u root maidtrack < database/seed_admin.sql
      ```
 4. **Set up config.** Copy `config/database.example.php` to
    `config/database.php` (gitignored — never commit real credentials).
    Defaults match a stock XAMPP install: host `localhost`, user `root`, no
    password. Edit that file if your MySQL setup differs.
-5. **Open the app**: `http://localhost/MaidTrackingApps/` — you should see a
-   setup-status page confirming the database connection and table count.
-   Login portals for Admin/Agency/Client land in Phase 1.
+5. **Open the app**: `http://localhost/MaidTrackingApps/` — you'll land on
+   the login page. Admin login credentials are in `CREDENTIALS.md`
+   (gitignored, local only — not in this repo). Register a test agency at
+   `/agency/register.php`, then approve it as Admin before it can log in.
+   The Client portal lands in Phase 2.
 
 ## Deploying to production (cPanel)
 
@@ -75,13 +90,13 @@ proposal.
 
 ```
 /config      app + database configuration (config/database.php is gitignored)
-/database    schema.sql (full schema) and seed_master_data.sql (starter lists)
-/includes    shared helpers (functions.php grows as pages are added)
-/models      PDO data-access classes — added in Phase 1
-/admin       Admin portal — added in Phase 1
-/agency      Agency portal — added in Phase 1
+/database    schema.sql, seed_master_data.sql, seed_admin.sql
+/includes    bootstrap.php (require chain), auth.php, functions.php, header/footer.php
+/models      PDO data-access classes — Admin, Agency, Housemaid, HousemaidDocument, MasterData, AuditLog
+/admin       Admin portal — dashboard, approval queues, master data, audit log
+/agency      Agency portal — register, dashboard, roster, housemaid intake wizard, profile
 /client      Client portal — added in Phase 2
-/assets      css/js — added as the UI is built
+/assets      css/app.css (pastel design system), js/app.js (bulk-select, confirm dialogs)
 /uploads     housemaid/agency documents & photos (gitignored, never committed)
 ```
 
