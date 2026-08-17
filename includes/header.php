@@ -22,7 +22,8 @@ $base = rtrim(APP_URL, '/');
 })();
 </script>
 
-<link rel="stylesheet" href="<?= e($base) ?>/assets/css/app.css">
+<?php $cssVer = @filemtime(__DIR__ . '/../assets/css/app.css') ?: time(); ?>
+<link rel="stylesheet" href="<?= e($base) ?>/assets/css/app.css?v=<?= $cssVer ?>">
 
 <!-- PWA / installability — see manifest.json and sw.js -->
 <link rel="manifest" href="<?= e($base) ?>/manifest.json">
