@@ -14,7 +14,7 @@ Full scope, role breakdown, and design decisions live in the platform
 proposal shared with the project owner — this README covers what's
 actually built and how to run it.
 
-## Status: Phase 4 — Security hardening
+## Status: Phase 5 — Live on Cloudflare Tunnel, cPanel deploy on hold
 
 Working now:
 - Full database schema (`database/schema.sql`) — agencies, admins, clients,
@@ -92,8 +92,20 @@ Working now:
   this from Phase 1) and **login rate-limiting** — 5 failed attempts
   locks an account for 15 minutes, even against the correct password.
 
+- **Live via Cloudflare Tunnel** — the XAMPP install below now runs
+  under real Apache (not `php -S`), reachable publicly through a
+  `cloudflared` Quick Tunnel. See "Going live (Cloudflare Tunnel)"
+  below. **cPanel hosting is intentionally on hold** — Phase 5 was
+  redirected to a Cloudflare-fronted local server on the project
+  owner's instruction, until they say otherwise.
+- Fixed along the way: link generation now trusts `X-Forwarded-Proto`
+  (Apache can't see `$_SERVER['HTTPS']` when Cloudflare terminates TLS
+  at its edge and forwards plain HTTP) — every generated link was
+  coming out `http://` on an `https://` page before this.
+
 Not built yet (next phases):
-- **Phase 5** — cPanel deploy.
+- **Phase 5, remainder** — actual cPanel hosting, on hold until the
+  project owner says go.
 - **Phase 6** — Android: the PWA is already installable (see below); a
   WebView-wrapped APK is the next step once the site is live.
 
@@ -162,20 +174,73 @@ which isn't enabled by default in a stock XAMPP install — run it with
 php -d extension=php_gd.dll scripts/generate_icons.php
 ```
 
-## Deploying to production (cPanel)
+## Going live (Cloudflare Tunnel)
 
-Covered in full once Phase 5 is reached, but in short: same schema import
-via phpMyAdmin on the host, same `config/database.php` pattern with the
-host's DB credentials, uploads folder kept outside direct URL access, and
-HTTPS via the host's free Let's Encrypt option. Hosting should stay
-Malaysia-based per the PDPA cross-border data consideration in the
-proposal.
+Instead of cPanel hosting (on hold — see Status above), the local XAMPP
+install is exposed publicly through a Cloudflare Tunnel: Cloudflare
+terminates HTTPS at its edge and proxies to Apache on this machine, no
+port-forwarding or hosting account needed.
+
+1. **Run under real Apache, not `php -S`.** `.htaccess` (the uploads
+   lockdown) only takes effect under Apache — confirmed by testing: a
+   direct request to `/uploads/agencies/` returns `403` under Apache,
+   but PHP's built-in dev server ignores `.htaccess` entirely and would
+   serve it. The project is linked into XAMPP's `htdocs` via a directory
+   junction (`C:\xampp\htdocs\MaidTrackingApps` → the repo folder), so
+   there's one source of truth rather than a copy that can drift.
+2. **Start Apache and MySQL** from the XAMPP Control Panel (or
+   `httpd.exe` / `mysqld.exe` directly).
+3. **Start a tunnel.** [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
+   must be installed. Two options:
+   - **Quick Tunnel** (what's running now) — no Cloudflare account
+     needed, gives an instant `*.trycloudflare.com` HTTPS URL:
+     ```bash
+     cloudflared tunnel --url http://localhost/MaidTrackingApps
+     ```
+     The URL is random and changes every time the tunnel restarts —
+     fine for a quick look, not for anything you'd want to bookmark or
+     share long-term.
+   - **Named Tunnel** (persistent, your own domain) — needs your own
+     Cloudflare account and a domain added to it. Run
+     `cloudflared tunnel login` (opens a browser for *you* to
+     authenticate with *your* Cloudflare account — nothing about your
+     login is ever seen by anyone else), then `cloudflared tunnel create
+     maidtrack` and a DNS route. Ask if you want this set up once you've
+     got a domain ready.
+4. **Heads up on exposing test data publicly.** The seeded admin
+   account (`CREDENTIALS.md`) is reachable from anywhere while a tunnel
+   is up. Fine for a private demo link you're not sharing widely; worth
+   rotating that password before leaving a tunnel running long-term or
+   handing the URL to anyone outside this conversation.
+
+## Deploying to production (cPanel) — on hold
+
+Held per instruction until you say go. When it's time: same schema
+import via phpMyAdmin on the host, same `config/database.php` /
+`config/secrets.php` pattern with the host's real values, uploads folder
+kept outside direct URL access (same `.htaccess` approach, already
+tested and working), HTTPS via the host's free Let's Encrypt option.
+Hosting should stay Malaysia-based per the PDPA cross-border data
+consideration in the proposal.
+
+## Backups
+
+```bash
+scripts/backup_db.sh
+```
+Dumps to `database/backups/maidtrack_<timestamp>.sql` (gitignored — real
+data never gets committed). Restore with:
+```bash
+mysql -u root maidtrack < database/backups/<file>.sql
+```
+Tested both directions: backed up the live dev database, restored it
+into a throwaway database, and confirmed row counts matched.
 
 ## Project structure
 
 ```
 /config      app config (database.php and secrets.php are both gitignored)
-/database    schema.sql, seed_master_data.sql, seed_admin.sql, migrate_phaseN.sql
+/database    schema.sql, seed_master_data.sql, seed_admin.sql, migrate_phaseN.sql, backups/ (gitignored)
 /includes    bootstrap.php (require chain), auth.php (also login rate-limiting), functions.php
              (also encryption + protected-file streaming), header/footer.php
 /models      PDO data-access classes — Admin, Agency, Housemaid, HousemaidDocument, MasterData,
@@ -188,7 +253,7 @@ proposal.
 /assets      css/app.css (pastel design system + dark mode), js/app.js (bulk-select, theme toggle, SW registration), icons/ (PWA icons)
 /uploads     housemaid/agency/incident files (gitignored; .htaccess denies direct access) — never
              linked directly, always served through download.php
-/scripts     one-off dev tools (generate_icons.php)
+/scripts     dev/ops tools (generate_icons.php, backup_db.sh)
 download.php, manifest.json, sw.js, offline.html   protected file gateway + PWA shell
 ```
 

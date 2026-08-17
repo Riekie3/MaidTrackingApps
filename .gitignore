@@ -11,6 +11,10 @@ CREDENTIALS.md
 uploads/*/*
 !uploads/*/.gitkeep
 
+# Database backups — real data, never commit
+database/backups/*
+!database/backups/.gitkeep
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db
