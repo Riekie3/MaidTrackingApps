@@ -14,7 +14,7 @@ Full scope, role breakdown, and design decisions live in the platform
 proposal shared with the project owner — this README covers what's
 actually built and how to run it.
 
-## Status: Phase 1 — Admin + Agency core
+## Status: Phase 2 — Client marketplace
 
 Working now:
 - Full database schema (`database/schema.sql`) — agencies, admins, clients,
@@ -49,10 +49,23 @@ Working now:
   the static shell, never touches session pages or POSTs), a static
   offline fallback page, and real app icons. See "Installing as an app"
   below.
+- **Client portal** — self-register at `client/register.php`, then verify
+  with a 6-digit code (both channels at once — see "OTP in dev mode"
+  below) before browsing unlocks at all. Browse with filters (skill,
+  nationality, min. experience, availability), request a booking, and
+  leave a four-category review once the agency marks it completed.
+  Passport is masked to last-4 until a client has an accepted/completed
+  booking with that specific housemaid, same for the agency's aggregate
+  rating/roster shown on its public profile.
+- **Booking lifecycle** (`agency/bookings.php`) — client requests →
+  agency accepts/declines → agency marks completed, or either side
+  cancels. Accepting flips the housemaid to Placed; completing or
+  cancelling flips her back to Available automatically. One review per
+  completed booking; the housemaid's aggregate rating recalculates the
+  moment a review lands, and the agency can post one response per review
+  from her profile page.
 
 Not built yet (next phases):
-- **Phase 2** — Client portal: registration/verification gate, browse &amp;
-  filter, booking requests, post-booking reviews.
 - **Phase 3** — Reports (due-diligence PDF, roster/compliance, agency
   performance, admin overview).
 - **Phase 4** — Security hardening (passport masking, consent capture,
@@ -69,13 +82,17 @@ Not built yet (next phases):
 2. **Start Apache and MySQL** from the XAMPP Control Panel.
 3. **Create the database.** Open phpMyAdmin (`http://localhost/phpmyadmin`),
    then either:
-   - Use the "Import" tab to import `database/schema.sql`, then
-     `database/seed_master_data.sql`, then `database/seed_admin.sql`, **or**
+   - Use the "Import" tab to import, **in this order**: `database/schema.sql`,
+     `database/seed_master_data.sql`, `database/seed_admin.sql`, then
+     `database/migrate_phase2.sql` (adds `bookings.notes`, added after
+     the original schema was scoped — every phase that needs a schema
+     change ships its own `migrate_phaseN.sql`, run in phase order), **or**
    - Run from a terminal:
      ```bash
      mysql -u root < database/schema.sql
      mysql -u root maidtrack < database/seed_master_data.sql
      mysql -u root maidtrack < database/seed_admin.sql
+     mysql -u root maidtrack < database/migrate_phase2.sql
      ```
 4. **Set up config.** Copy `config/database.example.php` to
    `config/database.php` (gitignored — never commit real credentials).
@@ -84,8 +101,17 @@ Not built yet (next phases):
 5. **Open the app**: `http://localhost/MaidTrackingApps/` — you'll land on
    the login page. Admin login credentials are in `CREDENTIALS.md`
    (gitignored, local only — not in this repo). Register a test agency at
-   `/agency/register.php`, then approve it as Admin before it can log in.
-   The Client portal lands in Phase 2.
+   `/agency/register.php` and approve it as Admin, then a test client at
+   `/client/register.php` and verify it (see "OTP in dev mode" below)
+   before either can do anything else.
+
+## OTP in dev mode
+
+There's no real email/SMS gateway wired up yet, so `client/verify.php`
+displays the 6-digit code directly on the page, clearly labeled "Dev
+mode." A real sender (SES, Twilio, whatever gets chosen) only has to
+replace what happens with the code `ClientOtp::issue()` returns — the
+verification logic itself doesn't change.
 
 ## Installing as an app (PWA)
 
@@ -118,12 +144,14 @@ proposal.
 
 ```
 /config      app + database configuration (config/database.php is gitignored)
-/database    schema.sql, seed_master_data.sql, seed_admin.sql
+/database    schema.sql, seed_master_data.sql, seed_admin.sql, migrate_phaseN.sql
 /includes    bootstrap.php (require chain), auth.php, functions.php, header/footer.php
-/models      PDO data-access classes — Admin, Agency, Housemaid, HousemaidDocument, MasterData, AuditLog
+/models      PDO data-access classes — Admin, Agency, Housemaid, HousemaidDocument, MasterData,
+             AuditLog, Client, ClientOtp, Booking, Review
 /admin       Admin portal — dashboard, approval queues, master data, audit log
-/agency      Agency portal — register, dashboard, roster, housemaid intake wizard, profile
-/client      Client portal — added in Phase 2
+/agency      Agency portal — register, dashboard, roster, housemaid intake wizard, profile, bookings
+/client      Client portal — register, OTP verify, dashboard, browse, candidate/agency profiles,
+             booking request, booking history, reviews
 /assets      css/app.css (pastel design system + dark mode), js/app.js (bulk-select, theme toggle, SW registration), icons/ (PWA icons)
 /uploads     housemaid/agency documents & photos (gitignored, never committed)
 /scripts     one-off dev tools (generate_icons.php)
