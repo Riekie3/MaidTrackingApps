@@ -5,7 +5,15 @@
 // from XAMPP's htdocs (e.g. /MaidTrackingApps), a bare vhost, or a
 // production domain — no hardcoded path to break when the environment
 // changes.
-$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+//
+// X-Forwarded-Proto matters here: behind a Cloudflare Tunnel (or any
+// reverse proxy/CDN), the browser's connection to Cloudflare is HTTPS
+// but Cloudflare's connection to this Apache is plain HTTP — Apache
+// never sees $_SERVER['HTTPS'] set, so without this every generated
+// link would say http:// on a page the browser loaded over https://.
+$forwardedProto = strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '');
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $forwardedProto === 'https';
+$scheme = $isHttps ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
 // String-based, not dirname() — PHP's dirname() on Windows returns a bare
