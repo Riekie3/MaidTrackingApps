@@ -25,18 +25,24 @@ foreach (Booking::listByClient($clientId) as $b) {
     }
 }
 
+$age = calculate_age($hm['date_of_birth']);
 $pageTitle = $hm['full_name'];
 require __DIR__ . '/../includes/header.php';
 ?>
 <div class="container">
     <div class="page-head">
-        <div>
-            <h1><?= e($hm['full_name']) ?></h1>
-            <p>
-                <?= e($hm['nationality_name'] ?? '—') ?> ·
-                <a href="<?= e(rtrim(APP_URL, '/')) ?>/client/agency_profile.php?id=<?= (int) $hm['agency_id'] ?>"><?= e($hm['agency_name']) ?></a>
-                · <span class="pill <?= e($hm['availability_status']) ?>"><?= e(ucfirst(str_replace('_', ' ', $hm['availability_status']))) ?></span>
-            </p>
+        <div style="display:flex;gap:16px;align-items:center;">
+            <?php if ($hm['photo_path']): ?>
+                <img src="<?= e(rtrim(APP_URL, '/')) ?>/download.php?kind=housemaid_photo&id=<?= (int) $hm['id'] ?>" alt="<?= e($hm['full_name']) ?>" style="width:72px;height:72px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+            <?php endif; ?>
+            <div>
+                <h1 style="margin-bottom:2px;"><?= e($hm['full_name']) ?></h1>
+                <p style="margin:0;">
+                    <?= e($hm['nationality_name'] ?? '—') ?><?php if ($age !== null): ?> · <?= $age ?> yrs old<?php endif; ?> ·
+                    <a href="<?= e(rtrim(APP_URL, '/')) ?>/client/agency_profile.php?id=<?= (int) $hm['agency_id'] ?>"><?= e($hm['agency_name']) ?></a>
+                    · <span class="pill <?= e($hm['availability_status']) ?>"><?= e(ucfirst(str_replace('_', ' ', $hm['availability_status']))) ?></span>
+                </p>
+            </div>
         </div>
         <div class="btn-row">
             <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/client/report_due_diligence.php?id=<?= (int) $hm['id'] ?>">Due-diligence report</a>

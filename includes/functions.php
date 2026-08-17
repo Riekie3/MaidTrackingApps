@@ -209,3 +209,15 @@ function stream_protected_file(string $absolutePath): never
     readfile($absolutePath);
     exit;
 }
+
+function calculate_age(?string $dob): ?int
+{
+    if (!$dob) {
+        return null;
+    }
+    $ts = strtotime($dob);
+    if (!$ts) {
+        return null;
+    }
+    return (int) date_diff(date_create($dob), date_create('now'))->y;
+}

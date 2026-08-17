@@ -41,39 +41,11 @@
 }
 
 /* Dark mode: same pastel families, lightened for a dark ground, each
-   still deep/light enough to clear AA contrast. Follows the system
-   setting by default; the header toggle sets data-theme explicitly and
-   that always wins (handled by the two blocks below + app.js). */
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        --paper: #1E2430;
-        --paper-raised: #262D3B;
-        --ink: #E8EAF0;
-        --ink-soft: #A8AFC0;
-        --ink-faint: #8891A4;
-        --line: #333B4C;
-        --line-strong: #444E63;
-
-        --primary: #8FB0DE;
-        --primary-dark: #6E92C4;
-        --primary-soft: #2C3B52;
-
-        --accent: #F0BBA5;
-        --accent-text: #F0BBA5;
-        --accent-soft: #3D2E29;
-
-        --good: #7FC49B;
-        --good-soft: #223A2C;
-
-        --danger: #E8968A;
-        --danger-soft: #3D2926;
-
-        --pending: #E0B876;
-        --pending-soft: #3A2F1C;
-
-        --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
-    }
-}
+   still deep/light enough to clear AA contrast. Light is ALWAYS the
+   default, regardless of the OS/browser setting — dark only applies
+   when the header toggle has been clicked (data-theme="dark", set and
+   persisted by app.js). Deliberately no @media (prefers-color-scheme)
+   block — system preference is not consulted at all. */
 :root[data-theme="dark"] {
     --paper: #1E2430;
     --paper-raised: #262D3B;
@@ -204,10 +176,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .theme-toggle .icon-dark { display: none; }
 :root[data-theme="dark"] .theme-toggle .icon-light { display: none; }
 :root[data-theme="dark"] .theme-toggle .icon-dark { display: inline; }
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .theme-toggle .icon-light { display: none; }
-    :root:not([data-theme="light"]) .theme-toggle .icon-dark { display: inline; }
-}
 
 /* ---------- Layout ---------- */
 .container { max-width: 1080px; margin: 0 auto; padding: 28px 16px 80px; }
@@ -237,6 +205,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .quick-link:hover { border-color: var(--primary); }
 .quick-link .ql-title { font-weight: 700; margin-bottom: 3px; }
 .quick-link .ql-desc { font-size: 13px; color: var(--ink-soft); }
+
+/* ---------- Candidate cards (photo, name, nationality, age up front) ---------- */
+.candidate-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.candidate-card {
+    display: block; background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; text-decoration: none; color: var(--ink); box-shadow: var(--shadow);
+}
+.candidate-card:hover { border-color: var(--primary); }
+.candidate-card .cc-photo {
+    width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; background: var(--primary-soft);
+}
+.candidate-card .cc-photo-placeholder {
+    width: 100%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
+    background: var(--primary-soft); color: var(--primary); font-size: 40px;
+}
+.candidate-card .cc-body { padding: 12px 14px; }
+.candidate-card .cc-name { font-weight: 700; margin-bottom: 2px; }
+.candidate-card .cc-meta { font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; }
+.candidate-card .cc-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
 /* ---------- Buttons ---------- */
 .btn {

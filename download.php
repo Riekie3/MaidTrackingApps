@@ -7,7 +7,7 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 
 $role = current_role();
-if (!$role || !in_array($role, ['admin', 'agency'], true)) {
+if (!$role || !in_array($role, ['admin', 'agency', 'client'], true)) {
     http_response_code(404);
     die('Not found.');
 }
@@ -15,6 +15,27 @@ if (!$role || !in_array($role, ['admin', 'agency'], true)) {
 $kind = $_GET['kind'] ?? '';
 $id = (int) ($_GET['id'] ?? 0);
 $agencyId = current_id();
+
+// Photos are the one file type meant to be seen by any signed-in role —
+// clients need them on browse/candidate pages — but a client only ever
+// gets the approved, public version of a housemaid, same gate as every
+// other client-facing lookup (Housemaid::publicFindById).
+if ($kind === 'housemaid_photo') {
+    $housemaid = $role === 'client' ? Housemaid::publicFindById($id) : Housemaid::findById($id);
+    $allowed = $housemaid && $housemaid['photo_path']
+        && ($role === 'admin' || $role === 'client' || (int) $housemaid['agency_id'] === $agencyId);
+    if (!$allowed) {
+        http_response_code(404);
+        die('Not found.');
+    }
+    stream_protected_file(rtrim(UPLOAD_HOUSEMAID_DIR, '/') . '/' . $housemaid['photo_path']);
+}
+
+if ($role === 'client') {
+    // Nothing else (documents, license, evidence) is ever client-facing.
+    http_response_code(404);
+    die('Not found.');
+}
 
 if ($kind === 'agency_license') {
     $agency = Agency::findById($id);

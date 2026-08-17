@@ -26,15 +26,14 @@ document.addEventListener('submit', function (e) {
 });
 
 // --- Theme toggle -------------------------------------------------------
-// header.php already applies any saved preference before first paint;
-// this just handles the click and persists the choice.
+// Light is always the default — header.php only applies data-theme if
+// the visitor has explicitly clicked the toggle before (saved in
+// localStorage); system/OS dark-mode preference is never consulted.
 
 var THEME_KEY = 'maidtrack-theme';
 
 function currentTheme() {
-    var explicit = document.documentElement.getAttribute('data-theme');
-    if (explicit) return explicit;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return document.documentElement.getAttribute('data-theme') || 'light';
 }
 
 document.addEventListener('click', function (e) {

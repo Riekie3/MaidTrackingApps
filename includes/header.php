@@ -26,8 +26,7 @@ $base = rtrim(APP_URL, '/');
 
 <!-- PWA / installability — see manifest.json and sw.js -->
 <link rel="manifest" href="<?= e($base) ?>/manifest.json">
-<meta name="theme-color" content="#4A6D9C" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1E2430" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#4A6D9C">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">

@@ -67,20 +67,28 @@ require __DIR__ . '/../includes/header.php';
         </div>
     </form>
 
-    <div class="quick-links">
+    <div class="candidate-grid">
         <?php if (!$result['rows']): ?>
             <p class="muted">No housemaids match those filters yet.</p>
         <?php endif; ?>
         <?php foreach ($result['rows'] as $h): ?>
-        <a class="quick-link" href="<?= e(rtrim(APP_URL, '/')) ?>/client/candidate.php?id=<?= (int) $h['id'] ?>">
-            <div class="ql-title"><?= e($h['full_name']) ?></div>
-            <div class="ql-desc">
-                <?= e($h['nationality_name'] ?? '—') ?> · <?= e((string) ($h['years_experience'] ?? 0)) ?> yrs
-                <?php if ($h['avg_rating']): ?> · ★ <?= e(number_format((float) $h['avg_rating'], 1)) ?><?php endif; ?>
-            </div>
-            <div style="margin-top:8px;">
-                <span class="pill <?= e($h['availability_status']) ?>"><?= e(ucfirst(str_replace('_', ' ', $h['availability_status']))) ?></span>
-                <span class="muted" style="font-size:12px;"> · <?= e($h['agency_name']) ?></span>
+        <?php $age = calculate_age($h['date_of_birth']); ?>
+        <a class="candidate-card" href="<?= e(rtrim(APP_URL, '/')) ?>/client/candidate.php?id=<?= (int) $h['id'] ?>">
+            <?php if ($h['photo_path']): ?>
+                <img class="cc-photo" src="<?= e(rtrim(APP_URL, '/')) ?>/download.php?kind=housemaid_photo&id=<?= (int) $h['id'] ?>" alt="<?= e($h['full_name']) ?>" loading="lazy">
+            <?php else: ?>
+                <div class="cc-photo-placeholder" aria-hidden="true">🧑‍🍳</div>
+            <?php endif; ?>
+            <div class="cc-body">
+                <div class="cc-name"><?= e($h['full_name']) ?></div>
+                <div class="cc-meta">
+                    <?= e($h['nationality_name'] ?? '—') ?><?php if ($age !== null): ?> · <?= $age ?> yrs old<?php endif; ?>
+                    <?php if ($h['avg_rating']): ?> · ★ <?= e(number_format((float) $h['avg_rating'], 1)) ?><?php endif; ?>
+                </div>
+                <div class="cc-tags">
+                    <span class="pill <?= e($h['availability_status']) ?>"><?= e(ucfirst(str_replace('_', ' ', $h['availability_status']))) ?></span>
+                    <span class="muted" style="font-size:12px;"><?= e($h['agency_name']) ?></span>
+                </div>
             </div>
         </a>
         <?php endforeach; ?>
