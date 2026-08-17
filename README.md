@@ -104,9 +104,12 @@ Working now:
   coming out `http://` on an `https://` page before this.
 - **Full demo dataset** (`scripts/seed_demo_data.php`) — see step 5
   below. Housemaid photos now render on Browse and the candidate
-  profile (synthetic initials-avatars, not real people — this demo
-  attaches invented incident reports to these profiles) with computed
-  age shown alongside.
+  profile — AI-generated faces of people who don't exist, not real
+  photos (this demo attaches invented incident reports to these
+  profiles, so no real person's likeness is used) — with computed age
+  shown alongside. On Browse, each photo is now a small 64px circular
+  thumbnail in a compact list-style card rather than a full-width
+  square.
 - **Dark mode is opt-in, not automatic** — no longer follows the OS/
   browser preference; light is always the default until the header
   toggle is clicked, on the project owner's instruction.
