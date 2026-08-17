@@ -23,6 +23,7 @@ require __DIR__ . '/includes/header.php';
 
     <div class="btn-row" style="margin:24px 0 40px;">
         <a class="btn btn-primary" href="<?= e(rtrim(APP_URL, '/')) ?>/login.php">Log in</a>
+        <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/client/register.php">I'm looking to hire</a>
         <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/agency/register.php">Register your agency</a>
     </div>
 

@@ -6,7 +6,7 @@
 function login_as(string $role, int $id, string $name): void
 {
     session_regenerate_id(true);
-    $_SESSION['auth_role'] = $role; // 'admin' | 'agency'  (client joins in Phase 2)
+    $_SESSION['auth_role'] = $role; // 'admin' | 'agency' | 'client'
     $_SESSION['auth_id']   = $id;
     $_SESSION['auth_name'] = $name;
 }
@@ -49,6 +49,7 @@ function dashboard_url_for(string $role): string
     return match ($role) {
         'admin'  => rtrim(APP_URL, '/') . '/admin/index.php',
         'agency' => rtrim(APP_URL, '/') . '/agency/index.php',
+        'client' => rtrim(APP_URL, '/') . '/client/index.php',
         default  => rtrim(APP_URL, '/') . '/login.php',
     };
 }

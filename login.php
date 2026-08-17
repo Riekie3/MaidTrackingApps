@@ -33,6 +33,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        $client = Client::findByEmail($email);
+        if ($client && password_verify($password, $client['password_hash'])) {
+            if ($client['status'] === 'pending_verification') {
+                $_SESSION['pending_client_id'] = (int) $client['id'];
+                redirect(rtrim(APP_URL, '/') . '/client/verify.php');
+            } elseif ($client['status'] === 'suspended') {
+                $errors[] = 'This account has been suspended. Contact the platform admin for details.';
+            } else {
+                login_as('client', (int) $client['id'], $client['name']);
+                redirect(dashboard_url_for('client'));
+            }
+        }
+
         if (empty($errors)) {
             $errors[] = 'Incorrect email or password.';
         }
@@ -65,6 +78,7 @@ require __DIR__ . '/includes/header.php';
         </form>
 
         <div class="auth-links">
+            Looking to hire? <a href="<?= e(rtrim(APP_URL, '/')) ?>/client/register.php">Create a client account</a><br>
             Housemaid agency? <a href="<?= e(rtrim(APP_URL, '/')) ?>/agency/register.php">Register here</a>
         </div>
     </div>

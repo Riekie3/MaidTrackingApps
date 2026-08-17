@@ -56,7 +56,14 @@ $base = rtrim(APP_URL, '/');
             <div class="nav-links">
                 <a href="<?= e($base) ?>/agency/index.php">Dashboard</a>
                 <a href="<?= e($base) ?>/agency/housemaids.php">Roster</a>
+                <a href="<?= e($base) ?>/agency/bookings.php">Bookings</a>
                 <a href="<?= e($base) ?>/agency/profile.php">Agency Profile</a>
+                <a class="signout" href="<?= e($base) ?>/logout.php">Sign out</a>
+            </div>
+            <?php elseif ($role === 'client'): ?>
+            <div class="nav-links">
+                <a href="<?= e($base) ?>/client/browse.php">Browse</a>
+                <a href="<?= e($base) ?>/client/bookings.php">My Bookings</a>
                 <a class="signout" href="<?= e($base) ?>/logout.php">Sign out</a>
             </div>
             <?php endif; ?>

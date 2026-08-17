@@ -21,9 +21,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['availability_status']
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_id'])) {
+    verify_csrf();
+    $response = trim($_POST['agency_response'] ?? '');
+    if ($response !== '') {
+        Review::addAgencyResponse((int) $_POST['review_id'], $agencyId, $response);
+        flash('success', 'Response posted.');
+    }
+    redirect(rtrim(APP_URL, '/') . '/agency/housemaid_view.php?id=' . $id);
+}
+
 $skills = Housemaid::getSkillNames($id);
 $languages = Housemaid::getLanguageNames($id);
 $documents = HousemaidDocument::listForHousemaid($id);
+$reviews = $hm['approval_status'] === 'approved' ? Review::listForHousemaid($id) : [];
 
 $pageTitle = $hm['full_name'];
 require __DIR__ . '/../includes/header.php';
@@ -71,7 +82,7 @@ require __DIR__ . '/../includes/header.php';
             <div class="detail-item"><div class="dl">Nationality</div><div class="dv"><?= e($hm['nationality_name'] ?? '—') ?></div></div>
             <div class="detail-item"><div class="dl">Marital status</div><div class="dv"><?= e($hm['marital_status'] ? ucfirst($hm['marital_status']) : '—') ?></div></div>
             <div class="detail-item"><div class="dl">Years experience</div><div class="dv"><?= e((string) ($hm['years_experience'] ?? '—')) ?></div></div>
-            <div class="detail-item"><div class="dl">Passport no.</div><div class="dv mono"><?= e(mask_document_number($hm['passport_number'])) ?></div></div>
+            <div class="detail-item"><div class="dl">Passport no.</div><div class="dv mono"><?= e($hm['passport_number'] ?? '—') ?></div></div>
             <div class="detail-item"><div class="dl">Passport expiry</div><div class="dv"><?= fmt_date($hm['passport_expiry']) ?></div></div>
             <div class="detail-item"><div class="dl">Work permit expiry</div><div class="dv"><?= fmt_date($hm['work_permit_expiry']) ?></div></div>
         </div>
@@ -101,5 +112,36 @@ require __DIR__ . '/../includes/header.php';
             <?php if (!$documents): ?><p class="muted">No documents uploaded.</p><?php endif; ?>
         </div>
     </div>
+
+    <?php if ($hm['approval_status'] === 'approved'): ?>
+    <div class="card" style="margin-top:24px;">
+        <h2>Reviews <span class="muted" style="font-weight:400;font-size:13px;"><?= $hm['avg_rating'] ? '— ★ ' . e(number_format((float) $hm['avg_rating'], 1)) . " average across {$hm['ratings_count']}" : '— none yet' ?></span></h2>
+        <?php if (!$reviews): ?><p class="muted">No reviews yet.</p><?php endif; ?>
+        <?php foreach ($reviews as $r): ?>
+            <?php $avg = ($r['rating_reliability'] + $r['rating_skill'] + $r['rating_hygiene'] + $r['rating_communication']) / 4; ?>
+            <div style="border-top:1px solid var(--line);padding:14px 0;">
+                <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                    <strong><?= e($r['client_name']) ?></strong>
+                    <span class="mono">★ <?= number_format($avg, 1) ?></span>
+                </div>
+                <?php if ($r['comment']): ?><p style="margin:6px 0;"><?= nl2br(e($r['comment'])) ?></p><?php endif; ?>
+                <?php if ($r['agency_response']): ?>
+                    <div style="margin-top:8px;padding:10px 12px;background:var(--primary-soft);border-radius:8px;font-size:13.5px;">
+                        <strong>Your response:</strong> <?= nl2br(e($r['agency_response'])) ?>
+                    </div>
+                <?php else: ?>
+                    <form method="post" style="margin-top:8px;">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="review_id" value="<?= (int) $r['id'] ?>">
+                        <div class="field" style="margin-bottom:8px;">
+                            <textarea name="agency_response" placeholder="Reply to this review…" style="min-height:60px;"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline">Post response</button>
+                    </form>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 </div>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

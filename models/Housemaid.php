@@ -216,4 +216,70 @@ class Housemaid
             'total'    => (int) ($row['total'] ?? 0),
         ];
     }
+
+    // System-triggered status change (booking accepted/completed), not
+    // gated by agency ownership the way the agency's own toggle is.
+    public static function setAvailability(int $id, string $status): void
+    {
+        getDB()->prepare('UPDATE housemaids SET availability_status = ? WHERE id = ?')->execute([$status, $id]);
+    }
+
+    // --- Client-facing browse (Phase 2) -----------------------------------
+    // Only approved housemaids from approved agencies are ever eligible —
+    // nothing pending or rejected is reachable from these queries.
+
+    public static function browse(array $filters, int $page, int $perPage): array
+    {
+        $where = ["h.approval_status = 'approved'", "a.approval_status = 'approved'"];
+        $params = [];
+
+        if (!empty($filters['skill_id'])) {
+            $where[] = 'h.id IN (SELECT housemaid_id FROM housemaid_skills WHERE skill_id = :skill_id)';
+            $params['skill_id'] = (int) $filters['skill_id'];
+        }
+        if (!empty($filters['nationality_country_id'])) {
+            $where[] = 'h.nationality_country_id = :nationality_country_id';
+            $params['nationality_country_id'] = (int) $filters['nationality_country_id'];
+        }
+        if (!empty($filters['min_experience'])) {
+            $where[] = 'h.years_experience >= :min_experience';
+            $params['min_experience'] = (int) $filters['min_experience'];
+        }
+        if (!empty($filters['availability_status'])) {
+            $where[] = 'h.availability_status = :availability_status';
+            $params['availability_status'] = $filters['availability_status'];
+        }
+
+        $whereSql = implode(' AND ', $where);
+
+        $countStmt = getDB()->prepare(
+            "SELECT COUNT(*) FROM housemaids h JOIN agencies a ON a.id = h.agency_id WHERE $whereSql"
+        );
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+
+        $offset = max(0, ($page - 1) * $perPage);
+        $sql = "SELECT h.*, c.name AS nationality_name, a.company_name AS agency_name, a.logo_path AS agency_logo
+                FROM housemaids h
+                LEFT JOIN countries c ON c.id = h.nationality_country_id
+                JOIN agencies a ON a.id = h.agency_id
+                WHERE $whereSql
+                ORDER BY h.avg_rating DESC, h.created_at DESC
+                LIMIT $perPage OFFSET $offset";
+        $stmt = getDB()->prepare($sql);
+        $stmt->execute($params);
+
+        return ['rows' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    // Approved-only lookup for anything client-facing — a pending or
+    // rejected housemaid is never reachable by ID from the client side.
+    public static function publicFindById(int $id): ?array
+    {
+        $row = self::findById($id);
+        if (!$row || $row['approval_status'] !== 'approved') {
+            return null;
+        }
+        return $row;
+    }
 }

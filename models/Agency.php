@@ -76,4 +76,38 @@ class Agency
         $stmt = getDB()->prepare('UPDATE agencies SET logo_path = ? WHERE id = ?');
         $stmt->execute([$logoPath, $id]);
     }
+
+    // --- Client-facing (Phase 2) -------------------------------------------
+
+    public static function publicFindById(int $id): ?array
+    {
+        $row = self::findById($id);
+        return ($row && $row['approval_status'] === 'approved') ? $row : null;
+    }
+
+    public static function rosterStats(int $id): array
+    {
+        $row = getDB()->prepare(
+            "SELECT COUNT(*) AS roster_count, AVG(NULLIF(avg_rating, 0)) AS agency_rating
+             FROM housemaids WHERE agency_id = ? AND approval_status = 'approved'"
+        );
+        $row->execute([$id]);
+        $result = $row->fetch();
+        return [
+            'roster_count'  => (int) ($result['roster_count'] ?? 0),
+            'agency_rating' => $result['agency_rating'] !== null ? round((float) $result['agency_rating'], 2) : null,
+        ];
+    }
+
+    public static function publicHousemaids(int $id): array
+    {
+        $stmt = getDB()->prepare(
+            "SELECT h.*, c.name AS nationality_name FROM housemaids h
+             LEFT JOIN countries c ON c.id = h.nationality_country_id
+             WHERE h.agency_id = ? AND h.approval_status = 'approved'
+             ORDER BY h.avg_rating DESC"
+        );
+        $stmt->execute([$id]);
+        return $stmt->fetchAll();
+    }
 }
