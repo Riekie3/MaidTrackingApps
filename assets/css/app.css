@@ -207,20 +207,22 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .quick-link .ql-desc { font-size: 13px; color: var(--ink-soft); }
 
 /* ---------- Candidate cards (photo, name, nationality, age up front) ---------- */
-.candidate-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.candidate-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
 .candidate-card {
-    display: block; background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius);
+    display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius);
     overflow: hidden; text-decoration: none; color: var(--ink); box-shadow: var(--shadow);
 }
 .candidate-card:hover { border-color: var(--primary); }
 .candidate-card .cc-photo {
-    width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; background: var(--primary-soft);
+    width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%; object-fit: cover; display: block;
+    background: var(--primary-soft);
 }
 .candidate-card .cc-photo-placeholder {
-    width: 100%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
-    background: var(--primary-soft); color: var(--primary); font-size: 40px;
+    width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: var(--primary-soft); color: var(--primary); font-size: 26px;
 }
-.candidate-card .cc-body { padding: 12px 14px; }
+.candidate-card .cc-body { min-width: 0; flex: 1; }
 .candidate-card .cc-name { font-weight: 700; margin-bottom: 2px; }
 .candidate-card .cc-meta { font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; }
 .candidate-card .cc-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }

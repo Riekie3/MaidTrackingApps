@@ -9,13 +9,13 @@
 // generated for itself.
 //
 // Every name below is a fictional placeholder for demo purposes, not a
-// real person. Photos are synthetic initials-avatars, not photos of real
-// people — deliberately chosen over stock/AI face photos so no actual
-// likeness ends up attached to a fabricated profile that includes
-// invented incident reports. The avatar files live in the versioned
-// database/demo_assets/avatars/ (uploads/ itself is gitignored, so
-// they'd be missing on a fresh clone otherwise) and get copied into
-// place below. Run once against a freshly migrated database:
+// real person. Photos are AI-generated faces of people who do not exist
+// (StyleGAN2/FFHQ synthetic portraits), chosen instead of real photos so
+// no actual person's likeness ends up attached to a fabricated profile
+// that includes invented incident reports. The avatar files live in the
+// versioned database/demo_assets/avatars/ (uploads/ itself is
+// gitignored, so they'd be missing on a fresh clone otherwise) and get
+// copied into place below. Run once against a freshly migrated database:
 //   php scripts/seed_demo_data.php
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -24,10 +24,10 @@ $avatarSrcDir = __DIR__ . '/../database/demo_assets/avatars';
 if (!is_dir(UPLOAD_HOUSEMAID_DIR)) {
     mkdir(UPLOAD_HOUSEMAID_DIR, 0755, true);
 }
-foreach (glob($avatarSrcDir . '/*.png') as $avatar) {
+foreach (glob($avatarSrcDir . '/*.jpg') as $avatar) {
     copy($avatar, UPLOAD_HOUSEMAID_DIR . '/' . basename($avatar));
 }
-echo 'Copied ' . count(glob($avatarSrcDir . '/*.png')) . " demo avatars into uploads/housemaids/\n";
+echo 'Copied ' . count(glob($avatarSrcDir . '/*.jpg')) . " demo avatars into uploads/housemaids/\n";
 
 function skill_id(string $name): int
 {
@@ -113,7 +113,7 @@ function make_housemaid(int $agencyId, array $core, array $skillNames, array $la
 $hm = [];
 
 $hm['siti'] = make_housemaid($agencies['sinar_jaya'], [
-    'full_name' => 'Siti Marlina', 'photo_path' => 'demo_siti.png', 'date_of_birth' => '1992-03-14', 'gender' => 'female',
+    'full_name' => 'Siti Marlina', 'photo_path' => 'demo_siti.jpg', 'date_of_birth' => '1992-03-14', 'gender' => 'female',
     'nationality_country_id' => country_id('Indonesia'), 'marital_status' => 'single', 'religion' => 'Islam',
     'passport_number' => 'A1234567', 'passport_expiry' => '2029-06-30', 'work_permit_number' => 'WP-998877',
     'work_permit_expiry' => '2027-01-15', 'national_id_number' => 'ID-556677',
@@ -123,7 +123,7 @@ $hm['siti'] = make_housemaid($agencies['sinar_jaya'], [
 ], ['Childcare - Infant', 'Childcare - School-age', 'Cooking - Local Malaysian'], ['Bahasa Indonesia', 'Bahasa Malaysia'], ['approve']);
 
 $hm['maria'] = make_housemaid($agencies['sinar_jaya'], [
-    'full_name' => 'Maria Santos', 'photo_path' => 'demo_maria.png', 'date_of_birth' => '1988-11-02', 'gender' => 'female',
+    'full_name' => 'Maria Santos', 'photo_path' => 'demo_maria.jpg', 'date_of_birth' => '1988-11-02', 'gender' => 'female',
     'nationality_country_id' => country_id('Philippines'), 'marital_status' => 'married', 'religion' => 'Catholic',
     'passport_number' => 'P7654321', 'passport_expiry' => '2028-02-20', 'work_permit_number' => 'WP-334455',
     'work_permit_expiry' => '2026-10-05', 'national_id_number' => 'PH-112233',
@@ -134,7 +134,7 @@ $hm['maria'] = make_housemaid($agencies['sinar_jaya'], [
 Housemaid::setAvailability($hm['maria'], 'placed');
 
 $hm['aye'] = make_housemaid($agencies['sinar_jaya'], [
-    'full_name' => 'Aye Aye Win', 'photo_path' => 'demo_aye.png', 'date_of_birth' => '1995-07-19', 'gender' => 'female',
+    'full_name' => 'Aye Aye Win', 'photo_path' => 'demo_aye.jpg', 'date_of_birth' => '1995-07-19', 'gender' => 'female',
     'nationality_country_id' => country_id('Myanmar'), 'marital_status' => 'single', 'religion' => 'Buddhist',
     'passport_number' => 'MM445566', 'passport_expiry' => '2027-09-12', 'work_permit_number' => 'WP-556611',
     'work_permit_expiry' => '2026-12-01', 'national_id_number' => 'MM-778899',
@@ -144,7 +144,7 @@ $hm['aye'] = make_housemaid($agencies['sinar_jaya'], [
 ], ['General Housekeeping', 'Ironing', 'Laundry'], ['Burmese'], ['approve']);
 
 $hm['dewi'] = make_housemaid($agencies['harmoni'], [
-    'full_name' => 'Dewi Anggraini', 'photo_path' => 'demo_dewi.png', 'date_of_birth' => '1990-05-25', 'gender' => 'female',
+    'full_name' => 'Dewi Anggraini', 'photo_path' => 'demo_dewi.jpg', 'date_of_birth' => '1990-05-25', 'gender' => 'female',
     'nationality_country_id' => country_id('Indonesia'), 'marital_status' => 'divorced', 'religion' => 'Islam',
     'passport_number' => 'A9988776', 'passport_expiry' => '2028-11-30', 'work_permit_number' => 'WP-221199',
     'work_permit_expiry' => '2027-04-18', 'national_id_number' => 'ID-334422',
@@ -154,7 +154,7 @@ $hm['dewi'] = make_housemaid($agencies['harmoni'], [
 ], ['Deep Cleaning', 'Cooking - Local Malaysian', 'Pet Care'], ['Bahasa Indonesia', 'Bahasa Malaysia'], ['approve']);
 
 $hm['grace'] = make_housemaid($agencies['harmoni'], [
-    'full_name' => 'Grace Fernandez', 'photo_path' => 'demo_grace.png', 'date_of_birth' => '1993-01-08', 'gender' => 'female',
+    'full_name' => 'Grace Fernandez', 'photo_path' => 'demo_grace.jpg', 'date_of_birth' => '1993-01-08', 'gender' => 'female',
     'nationality_country_id' => country_id('Philippines'), 'marital_status' => 'single', 'religion' => 'Catholic',
     'passport_number' => 'P1122334', 'passport_expiry' => '2029-03-15', 'work_permit_number' => null,
     'work_permit_expiry' => null, 'national_id_number' => 'PH-556677',
@@ -164,7 +164,7 @@ $hm['grace'] = make_housemaid($agencies['harmoni'], [
 ], ['Childcare - Infant', 'Cooking - Western'], ['Tagalog', 'English']); // left Pending on purpose
 
 $hm['thida'] = make_housemaid($agencies['kasih_sayang'], [
-    'full_name' => 'Thida Oo', 'photo_path' => 'demo_thida.png', 'date_of_birth' => '1991-09-30', 'gender' => 'female',
+    'full_name' => 'Thida Oo', 'photo_path' => 'demo_thida.jpg', 'date_of_birth' => '1991-09-30', 'gender' => 'female',
     'nationality_country_id' => country_id('Myanmar'), 'marital_status' => 'married', 'religion' => 'Buddhist',
     'passport_number' => 'MM667788', 'passport_expiry' => '2028-07-22', 'work_permit_number' => 'WP-887744',
     'work_permit_expiry' => '2027-02-10', 'national_id_number' => 'MM-990011',
@@ -174,7 +174,7 @@ $hm['thida'] = make_housemaid($agencies['kasih_sayang'], [
 ], ['Elderly Care', 'General Housekeeping'], ['Burmese', 'Bahasa Malaysia'], ['approve']);
 
 $hm['nimade'] = make_housemaid($agencies['kasih_sayang'], [
-    'full_name' => 'Ni Made Sari', 'photo_path' => 'demo_nimade.png', 'date_of_birth' => '1989-12-11', 'gender' => 'female',
+    'full_name' => 'Ni Made Sari', 'photo_path' => 'demo_nimade.jpg', 'date_of_birth' => '1989-12-11', 'gender' => 'female',
     'nationality_country_id' => country_id('Indonesia'), 'marital_status' => 'single', 'religion' => 'Hindu',
     'passport_number' => 'A5544332', 'passport_expiry' => '2027-05-08', 'work_permit_number' => 'WP-443322',
     'work_permit_expiry' => '2026-11-25', 'national_id_number' => 'ID-667788',
@@ -185,7 +185,7 @@ $hm['nimade'] = make_housemaid($agencies['kasih_sayang'], [
 Housemaid::setAvailability($hm['nimade'], 'on_leave');
 
 $hm['josephine'] = make_housemaid($agencies['kasih_sayang'], [
-    'full_name' => 'Josephine Cruz', 'photo_path' => 'demo_josephine.png', 'date_of_birth' => '1994-04-17', 'gender' => 'female',
+    'full_name' => 'Josephine Cruz', 'photo_path' => 'demo_josephine.jpg', 'date_of_birth' => '1994-04-17', 'gender' => 'female',
     'nationality_country_id' => country_id('Philippines'), 'marital_status' => 'single', 'religion' => 'Catholic',
     'passport_number' => 'P9988112', 'passport_expiry' => '2028-01-19', 'work_permit_number' => null,
     'work_permit_expiry' => null, 'national_id_number' => 'PH-223344',
