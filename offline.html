@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Offline · MaidTrack</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#F7F8FC;color:#33394A;font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;text-align:center;padding:24px;}
+  @media (prefers-color-scheme: dark){ body{background:#1E2430;color:#E8EAF0;} }
+  .card{max-width:340px;}
+  .icon{width:56px;height:56px;border-radius:14px;background:#4A6D9C;margin:0 auto 18px;
+    display:flex;align-items:center;justify-content:center;font-size:26px;}
+  h1{font-size:19px;margin:0 0 8px;}
+  p{font-size:14.5px;color:#6B7280;margin:0 0 20px;}
+  @media (prefers-color-scheme: dark){ p{color:#A8AFC0;} }
+  button{min-height:44px;padding:0 20px;border-radius:8px;border:none;background:#4A6D9C;color:#fff;
+    font-size:14.5px;font-weight:700;cursor:pointer;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🧹</div>
+    <h1>You're offline</h1>
+    <p>MaidTrack needs a connection to load your account. Reconnect and try again.</p>
+    <button onclick="location.reload()">Retry</button>
+  </div>
+</body>
+</html>

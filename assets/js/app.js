@@ -24,3 +24,33 @@ document.addEventListener('submit', function (e) {
         }
     }
 });
+
+// --- Theme toggle -------------------------------------------------------
+// header.php already applies any saved preference before first paint;
+// this just handles the click and persists the choice.
+
+var THEME_KEY = 'maidtrack-theme';
+
+function currentTheme() {
+    var explicit = document.documentElement.getAttribute('data-theme');
+    if (explicit) return explicit;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-theme-toggle]');
+    if (!btn) return;
+    var next = currentTheme() === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (err) {}
+});
+
+// --- PWA: register the service worker ------------------------------------
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register(document.body.getAttribute('data-sw-url') || '/sw.js').catch(function () {
+            // Offline shell just won't be available — the app still works online.
+        });
+    });
+}

@@ -40,6 +40,69 @@
     --shadow: 0 1px 2px rgba(51,57,74,0.05), 0 8px 24px rgba(51,57,74,0.06);
 }
 
+/* Dark mode: same pastel families, lightened for a dark ground, each
+   still deep/light enough to clear AA contrast. Follows the system
+   setting by default; the header toggle sets data-theme explicitly and
+   that always wins (handled by the two blocks below + app.js). */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --paper: #1E2430;
+        --paper-raised: #262D3B;
+        --ink: #E8EAF0;
+        --ink-soft: #A8AFC0;
+        --ink-faint: #8891A4;
+        --line: #333B4C;
+        --line-strong: #444E63;
+
+        --primary: #8FB0DE;
+        --primary-dark: #6E92C4;
+        --primary-soft: #2C3B52;
+
+        --accent: #F0BBA5;
+        --accent-text: #F0BBA5;
+        --accent-soft: #3D2E29;
+
+        --good: #7FC49B;
+        --good-soft: #223A2C;
+
+        --danger: #E8968A;
+        --danger-soft: #3D2926;
+
+        --pending: #E0B876;
+        --pending-soft: #3A2F1C;
+
+        --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
+    }
+}
+:root[data-theme="dark"] {
+    --paper: #1E2430;
+    --paper-raised: #262D3B;
+    --ink: #E8EAF0;
+    --ink-soft: #A8AFC0;
+    --ink-faint: #8891A4;
+    --line: #333B4C;
+    --line-strong: #444E63;
+
+    --primary: #8FB0DE;
+    --primary-dark: #6E92C4;
+    --primary-soft: #2C3B52;
+
+    --accent: #F0BBA5;
+    --accent-text: #F0BBA5;
+    --accent-soft: #3D2E29;
+
+    --good: #7FC49B;
+    --good-soft: #223A2C;
+
+    --danger: #E8968A;
+    --danger-soft: #3D2926;
+
+    --pending: #E0B876;
+    --pending-soft: #3A2F1C;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
+}
+
 * { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -121,6 +184,30 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .nav-links a:hover, .nav-links a.active { color: var(--primary); background: var(--primary-soft); }
 .nav-links .signout { color: var(--danger); }
+
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    background: var(--paper-raised);
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.theme-toggle:hover { color: var(--primary); border-color: var(--primary); }
+.theme-toggle .icon-dark { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-light { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-dark { display: inline; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-toggle .icon-light { display: none; }
+    :root:not([data-theme="light"]) .theme-toggle .icon-dark { display: inline; }
+}
 
 /* ---------- Layout ---------- */
 .container { max-width: 1080px; margin: 0 auto; padding: 28px 16px 80px; }
