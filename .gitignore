@@ -1,0 +1,15 @@
+# Local environment config (copy config/database.example.php to config/database.php)
+config/database.php
+
+# Uploaded files — never commit real documents/photos
+uploads/*/*
+!uploads/*/.gitkeep
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log
+
+# XAMPP / IDE
+.vscode/
+.idea/
