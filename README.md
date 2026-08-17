@@ -14,7 +14,7 @@ Full scope, role breakdown, and design decisions live in the platform
 proposal shared with the project owner — this README covers what's
 actually built and how to run it.
 
-## Status: Phase 3 — Reporting
+## Status: Phase 4 — Security hardening
 
 Working now:
 - Full database schema (`database/schema.sql`) — agencies, admins, clients,
@@ -73,10 +73,26 @@ Working now:
   client rate). Admin: platform overview (counts by status, 6-month
   growth chart). Charts use Chart.js from a CDN — the only external
   script this project loads; everything else is self-contained.
+- **Incident workflow** — agencies (own housemaids) and clients (only
+  for a housemaid they've actually had a booking with) can file a
+  report; Admin (`admin/incidents.php`) moves it Reported → Under
+  Review → Verified/Dismissed. Only Verified ever shows on a public
+  profile or the due-diligence report.
+- **Protected document access** — every uploaded file (license,
+  housemaid documents, incident evidence) is served through
+  `download.php`, which checks role + ownership first; `uploads/`
+  itself is also locked down via `.htaccess` for defense-in-depth on
+  real Apache hosting (see "Data handling" below for why the real
+  enforcement is in PHP, not `.htaccess`).
+- **Encryption at rest** — passport and national ID numbers are
+  AES-256-GCM encrypted before every write, decrypted on every read.
+  Key lives in `config/secrets.php` (gitignored, same pattern as
+  `database.php`).
+- **PDPA consent** at client registration (housemaid intake already had
+  this from Phase 1) and **login rate-limiting** — 5 failed attempts
+  locks an account for 15 minutes, even against the correct password.
 
 Not built yet (next phases):
-- **Phase 4** — Security hardening (passport masking, consent capture,
-  upload/auth pass).
 - **Phase 5** — cPanel deploy.
 - **Phase 6** — Android: the PWA is already installable (see below); a
   WebView-wrapped APK is the next step once the site is live.
@@ -90,21 +106,29 @@ Not built yet (next phases):
 3. **Create the database.** Open phpMyAdmin (`http://localhost/phpmyadmin`),
    then either:
    - Use the "Import" tab to import, **in this order**: `database/schema.sql`,
-     `database/seed_master_data.sql`, `database/seed_admin.sql`, then
-     `database/migrate_phase2.sql` (adds `bookings.notes`, added after
-     the original schema was scoped — every phase that needs a schema
-     change ships its own `migrate_phaseN.sql`, run in phase order), **or**
+     `database/seed_master_data.sql`, `database/seed_admin.sql`,
+     `database/migrate_phase2.sql`, `database/migrate_phase4.sql`
+     (every phase that needs a schema change ships its own
+     `migrate_phaseN.sql`, run in phase order — there's no `migrate_phase3.sql`,
+     Phase 3 didn't need one), **or**
    - Run from a terminal:
      ```bash
      mysql -u root < database/schema.sql
      mysql -u root maidtrack < database/seed_master_data.sql
      mysql -u root maidtrack < database/seed_admin.sql
      mysql -u root maidtrack < database/migrate_phase2.sql
+     mysql -u root maidtrack < database/migrate_phase4.sql
      ```
-4. **Set up config.** Copy `config/database.example.php` to
-   `config/database.php` (gitignored — never commit real credentials).
-   Defaults match a stock XAMPP install: host `localhost`, user `root`, no
-   password. Edit that file if your MySQL setup differs.
+4. **Set up config.** Copy both example files:
+   - `config/database.example.php` → `config/database.php`. Defaults match
+     a stock XAMPP install: host `localhost`, user `root`, no password.
+     Edit if your MySQL setup differs.
+   - `config/secrets.example.php` → `config/secrets.php`, then generate a
+     real encryption key and paste it in:
+     ```bash
+     php -r "echo bin2hex(random_bytes(32));"
+     ```
+   Both files are gitignored — never commit real credentials or keys.
 5. **Open the app**: `http://localhost/MaidTrackingApps/` — you'll land on
    the login page. Admin login credentials are in `CREDENTIALS.md`
    (gitignored, local only — not in this repo). Register a test agency at
@@ -150,29 +174,51 @@ proposal.
 ## Project structure
 
 ```
-/config      app + database configuration (config/database.php is gitignored)
+/config      app config (database.php and secrets.php are both gitignored)
 /database    schema.sql, seed_master_data.sql, seed_admin.sql, migrate_phaseN.sql
-/includes    bootstrap.php (require chain), auth.php, functions.php, header/footer.php
+/includes    bootstrap.php (require chain), auth.php (also login rate-limiting), functions.php
+             (also encryption + protected-file streaming), header/footer.php
 /models      PDO data-access classes — Admin, Agency, Housemaid, HousemaidDocument, MasterData,
-             AuditLog, Client, ClientOtp, Booking, Review
-/admin       Admin portal — dashboard, approval queues, master data, audit log, platform report
+             AuditLog, Client, ClientOtp, Booking, Review, Incident
+/admin       Admin portal — dashboard, approval queues, master data, audit log, incidents, platform report
 /agency      Agency portal — register, dashboard, roster, housemaid intake wizard, profile, bookings,
-             reports (roster & compliance, performance)
+             incident reports, reports (roster & compliance, performance)
 /client      Client portal — register, OTP verify, dashboard, browse, candidate/agency profiles,
-             booking request, booking history, reviews, due-diligence & booking reports
+             booking request, booking history, reviews, incident reports, due-diligence & booking reports
 /assets      css/app.css (pastel design system + dark mode), js/app.js (bulk-select, theme toggle, SW registration), icons/ (PWA icons)
-/uploads     housemaid/agency documents & photos (gitignored, never committed)
+/uploads     housemaid/agency/incident files (gitignored; .htaccess denies direct access) — never
+             linked directly, always served through download.php
 /scripts     one-off dev tools (generate_icons.php)
-manifest.json, sw.js, offline.html   PWA install + offline shell (see "Installing as an app")
+download.php, manifest.json, sw.js, offline.html   protected file gateway + PWA shell
 ```
 
 ## Data handling
 
-Passport numbers and other sensitive documents are masked to the last 4
-characters everywhere except the owning agency, Admin, or a client with a
-confirmed booking (`mask_document_number()` in `includes/functions.php`).
-Incident reports (e.g. "ran away") follow a
-Reported → Under Review → Verified workflow before ever appearing on a
-public profile — see the `incidents.status` column and the "Handle with
-care" note in the proposal. This matters both for basic fairness to the
-housemaids on the platform and because Malaysia's PDPA 2010 applies.
+- **Masking.** Passport/national ID numbers are masked to the last 4
+  characters everywhere except the owning agency, Admin, or a client with
+  a confirmed booking (`mask_document_number()` in `functions.php`).
+- **Encryption.** Those same two fields are also encrypted at rest
+  (AES-256-GCM, `encrypt_field()`/`decrypt_field()`, key in
+  `config/secrets.php`) — masking controls what's *shown*, encryption
+  protects what's *stored*, and both apply independently.
+- **File access.** Every uploaded document goes through `download.php`,
+  which checks the requester's role and ownership before streaming
+  anything; `uploads/.htaccess` denies direct access as a second layer
+  on real Apache hosting. Note: PHP's built-in dev server (`php -S`,
+  used for local testing) doesn't read `.htaccess` at all — the actual
+  access control is `download.php`'s own PHP-level check, which works
+  identically on every server, `.htaccess` or not.
+- **Incidents.** Reports (e.g. "ran away") follow a
+  Reported → Under Review → Verified/Dismissed workflow
+  (`admin/incidents.php`) before ever appearing on a public profile or
+  the due-diligence report — see the `incidents.status` column and the
+  "Handle with care" note in the proposal. Only Admin can verify one;
+  only Verified ones are ever shown to a client.
+- **Consent.** Captured (timestamped) at both housemaid submission and
+  client registration.
+- **Login protection.** 5 failed attempts against one email locks it out
+  for 15 minutes (`login_attempts` table), regardless of which device or
+  IP the attempts came from.
+
+All of this matters both for basic fairness to the housemaids on the
+platform and because Malaysia's PDPA 2010 applies.
