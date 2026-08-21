@@ -37,15 +37,18 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Housemaid</th><th>Agency</th><th>Dates</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Housemaid / Freelancer</th><th>Agency</th><th>Dates</th><th>Status</th><th></th></tr></thead>
             <tbody>
                 <?php if (!$bookings): ?>
                 <tr><td colspan="5" class="muted">No bookings yet.</td></tr>
                 <?php endif; ?>
                 <?php foreach ($bookings as $b): ?>
+                <?php $providerUrl = $b['provider_type'] === 'freelancer'
+                    ? rtrim(APP_URL, '/') . '/client/freelancer.php?id=' . (int) $b['provider_id']
+                    : rtrim(APP_URL, '/') . '/client/candidate.php?id=' . (int) $b['provider_id']; ?>
                 <tr>
-                    <td><a href="<?= e(rtrim(APP_URL, '/')) ?>/client/candidate.php?id=<?= (int) $b['housemaid_id'] ?>"><?= e($b['housemaid_name']) ?></a></td>
-                    <td><?= e($b['agency_name']) ?></td>
+                    <td><a href="<?= e($providerUrl) ?>"><?= e($b['provider_name']) ?></a></td>
+                    <td><?= e($b['agency_name'] ?? 'Freelancer') ?></td>
                     <td class="muted"><?= fmt_date($b['start_date']) ?><?= $b['end_date'] ? ' – ' . fmt_date($b['end_date']) : '' ?></td>
                     <td><span class="pill <?= $b['status'] === 'requested' ? 'pending' : ($b['status'] === 'completed' || $b['status'] === 'accepted' ? 'approved' : 'rejected') ?>"><?= e(ucfirst($b['status'])) ?></span></td>
                     <td class="actions">

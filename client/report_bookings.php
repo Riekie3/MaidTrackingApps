@@ -7,7 +7,7 @@ $bookings = Booking::listByClient($clientId);
 
 if (($_GET['format'] ?? '') === 'csv') {
     csv_download('maidtrack-bookings.csv', [
-        'housemaid_name' => 'Housemaid',
+        'provider_name' => 'Housemaid / Freelancer',
         'agency_name' => 'Agency',
         'status' => 'Status',
         'start_date' => 'Start date',
@@ -33,13 +33,13 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Housemaid</th><th>Agency</th><th>Dates</th><th>Status</th><th>Requested</th></tr></thead>
+            <thead><tr><th>Housemaid / Freelancer</th><th>Agency</th><th>Dates</th><th>Status</th><th>Requested</th></tr></thead>
             <tbody>
                 <?php if (!$bookings): ?><tr><td colspan="5" class="muted">No bookings.</td></tr><?php endif; ?>
                 <?php foreach ($bookings as $b): ?>
                 <tr>
-                    <td><?= e($b['housemaid_name']) ?></td>
-                    <td><?= e($b['agency_name']) ?></td>
+                    <td><?= e($b['provider_name']) ?></td>
+                    <td><?= e($b['agency_name'] ?? 'Freelancer') ?></td>
                     <td><?= fmt_date($b['start_date']) ?><?= $b['end_date'] ? ' – ' . fmt_date($b['end_date']) : '' ?></td>
                     <td><?= e(ucfirst($b['status'])) ?></td>
                     <td><?= fmt_date($b['created_at']) ?></td>

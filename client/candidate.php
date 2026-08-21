@@ -12,14 +12,14 @@ if (!$hm) {
 
 $skills = Housemaid::getSkillNames($id);
 $languages = Housemaid::getLanguageNames($id);
-$reviews = Review::listForHousemaid($id);
-$qualifies = Booking::hasQualifyingBooking($clientId, $id);
-$verifiedIncidents = Incident::listVerifiedForHousemaid($id);
+$reviews = Review::listForProvider('housemaid', $id);
+$qualifies = Booking::hasQualifyingBooking($clientId, 'housemaid', $id);
+$verifiedIncidents = Incident::listVerifiedForProvider('housemaid', $id);
 
 // Any existing non-terminal request from this client for this housemaid?
 $existing = null;
 foreach (Booking::listByClient($clientId) as $b) {
-    if ((int) $b['housemaid_id'] === $id && in_array($b['status'], ['requested', 'accepted'], true)) {
+    if ($b['provider_type'] === 'housemaid' && (int) $b['provider_id'] === $id && in_array($b['status'], ['requested', 'accepted'], true)) {
         $existing = $b;
         break;
     }

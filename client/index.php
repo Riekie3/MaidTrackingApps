@@ -39,8 +39,8 @@ require __DIR__ . '/../includes/header.php';
                 <?php endif; ?>
                 <?php foreach (array_slice($bookings, 0, 5) as $b): ?>
                 <tr class="row-link" onclick="location.href='<?= e(rtrim(APP_URL, '/')) ?>/client/bookings.php'">
-                    <td><?= e($b['housemaid_name']) ?></td>
-                    <td><?= e($b['agency_name']) ?></td>
+                    <td><?= e($b['provider_name']) ?></td>
+                    <td><?= e($b['agency_name'] ?? 'Freelancer') ?></td>
                     <td><span class="pill <?= $b['status'] === 'requested' ? 'pending' : ($b['status'] === 'completed' || $b['status'] === 'accepted' ? 'approved' : 'rejected') ?>"><?= e(ucfirst($b['status'])) ?></span></td>
                     <td class="muted"><?= fmt_date($b['created_at']) ?></td>
                 </tr>

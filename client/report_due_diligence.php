@@ -11,11 +11,11 @@ if (!$hm) {
 
 $skills = Housemaid::getSkillNames($id);
 $languages = Housemaid::getLanguageNames($id);
-$breakdown = Review::categoryAverages($id);
+$breakdown = Review::categoryAverages('housemaid', $id);
 
 // Verified incidents only — Reported/Under Review claims never appear
 // here, or anywhere client-facing. See the proposal's "Handle with care" note.
-$incidents = Incident::listVerifiedForHousemaid($id);
+$incidents = Incident::listVerifiedForProvider('housemaid', $id);
 
 $pageTitle = 'Due-Diligence Report — ' . $hm['full_name'];
 require __DIR__ . '/../includes/header.php';

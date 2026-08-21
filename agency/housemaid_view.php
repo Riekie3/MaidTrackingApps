@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_id'])) {
 $skills = Housemaid::getSkillNames($id);
 $languages = Housemaid::getLanguageNames($id);
 $documents = HousemaidDocument::listForHousemaid($id);
-$reviews = $hm['approval_status'] === 'approved' ? Review::listForHousemaid($id) : [];
+$reviews = $hm['approval_status'] === 'approved' ? Review::listForProvider('housemaid', $id) : [];
 
 $pageTitle = $hm['full_name'];
 require __DIR__ . '/../includes/header.php';

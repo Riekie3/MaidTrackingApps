@@ -24,7 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errors) {
         $evidence = handle_upload('evidence', UPLOAD_INCIDENT_DIR);
         $id = Incident::create([
-            'housemaid_id' => $housemaidId,
+            'provider_type' => 'housemaid',
+            'provider_id' => $housemaidId,
             'reported_by_type' => 'agency',
             'reported_by_id' => $agencyId,
             'incident_type' => $type,

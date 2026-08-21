@@ -31,14 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         Review::create([
             'booking_id' => $bookingId,
             'client_id' => $clientId,
-            'housemaid_id' => (int) $booking['housemaid_id'],
+            'provider_type' => $booking['provider_type'],
+            'provider_id' => (int) $booking['provider_id'],
             'rating_reliability' => $ratings['reliability'],
             'rating_skill' => $ratings['skill'],
             'rating_hygiene' => $ratings['hygiene'],
             'rating_communication' => $ratings['communication'],
             'comment' => $comment ?: null,
         ]);
-        flash('success', 'Thanks — your review is live on ' . $booking['housemaid_name'] . "'s profile.");
+        flash('success', 'Thanks — your review is live on ' . $booking['provider_name'] . "'s profile.");
         redirect(rtrim(APP_URL, '/') . '/client/bookings.php');
     }
 }
@@ -49,8 +50,8 @@ require __DIR__ . '/../includes/header.php';
 <div class="container narrow">
     <div class="page-head">
         <div>
-            <h1>Review <?= e($booking['housemaid_name']) ?></h1>
-            <p>Based on your completed booking with <?= e($booking['agency_name']) ?></p>
+            <h1>Review <?= e($booking['provider_name']) ?></h1>
+            <p>Based on your completed booking<?= $booking['agency_name'] ? ' with ' . e($booking['agency_name']) : '' ?></p>
         </div>
     </div>
 

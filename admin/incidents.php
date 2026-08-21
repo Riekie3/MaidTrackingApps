@@ -41,7 +41,7 @@ require __DIR__ . '/../includes/header.php';
     <div class="card" style="margin-bottom:14px;">
         <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
             <div>
-                <strong><?= e($inc['housemaid_name']) ?></strong> · <?= e($inc['agency_name']) ?>
+                <strong><?= e($inc['provider_name']) ?></strong> · <?= e($inc['agency_name']) ?>
                 <div class="muted" style="font-size:12.5px;">Reported by <?= e(ucfirst($inc['reported_by_type'])) ?> · <?= fmt_date($inc['created_at']) ?></div>
             </div>
             <span class="pill <?= $inc['status'] === 'under_review' ? 'pending' : 'rejected' ?>"><?= e(ucwords(str_replace('_', ' ', $inc['status']))) ?></span>
@@ -54,7 +54,7 @@ require __DIR__ . '/../includes/header.php';
             <?php if ($inc['status'] === 'reported'): ?>
             <form method="post"><?= csrf_field() ?><input type="hidden" name="incident_id" value="<?= (int) $inc['id'] ?>"><input type="hidden" name="action" value="under_review"><button class="btn btn-sm btn-outline" type="submit">Start review</button></form>
             <?php endif; ?>
-            <form method="post" data-confirm="Verify this incident? It will become visible on <?= e($inc['housemaid_name']) ?>'s public profile."><?= csrf_field() ?><input type="hidden" name="incident_id" value="<?= (int) $inc['id'] ?>"><input type="hidden" name="action" value="verify"><button class="btn btn-sm btn-primary" type="submit">Verify</button></form>
+            <form method="post" data-confirm="Verify this incident? It will become visible on <?= e($inc['provider_name']) ?>'s public profile."><?= csrf_field() ?><input type="hidden" name="incident_id" value="<?= (int) $inc['id'] ?>"><input type="hidden" name="action" value="verify"><button class="btn btn-sm btn-primary" type="submit">Verify</button></form>
             <form method="post" data-confirm="Dismiss this incident?"><?= csrf_field() ?><input type="hidden" name="incident_id" value="<?= (int) $inc['id'] ?>"><input type="hidden" name="action" value="dismiss"><button class="btn btn-sm btn-ghost" type="submit">Dismiss</button></form>
         </div>
     </div>

@@ -56,6 +56,24 @@ function country_id(string $name): int
 
 $agencyPass = password_hash('AgencyDemo123', PASSWORD_DEFAULT);
 $clientPass = password_hash('ClientDemo123', PASSWORD_DEFAULT);
+$freelancerPass = password_hash('FreelancerDemo123', PASSWORD_DEFAULT);
+
+function service_id(string $name): int
+{
+    static $cache = [];
+    if (!$cache) {
+        foreach (MasterData::services() as $s) $cache[$s['name']] = (int) $s['id'];
+    }
+    return $cache[$name] ?? 0;
+}
+function location_id(string $name): int
+{
+    static $cache = [];
+    if (!$cache) {
+        foreach (MasterData::locations() as $l) $cache[$l['name']] = (int) $l['id'];
+    }
+    return $cache[$name] ?? 0;
+}
 
 echo "Seeding agencies...\n";
 
@@ -212,31 +230,31 @@ echo "  4 clients, all verified\n";
 echo "Seeding bookings + reviews...\n";
 
 // 1. Completed, reviewed — the "hero" profile with full history.
-$b1 = Booking::create(['client_id' => $clients['nurul'], 'housemaid_id' => $hm['siti'], 'agency_id' => $agencies['sinar_jaya'], 'start_date' => '2026-01-15', 'end_date' => '2026-07-15', 'notes' => 'Household of 4, two young children, need help with elderly care too.']);
+$b1 = Booking::create(['client_id' => $clients['nurul'], 'provider_type' => 'housemaid', 'provider_id' => $hm['siti'], 'agency_id' => $agencies['sinar_jaya'], 'start_date' => '2026-01-15', 'end_date' => '2026-07-15', 'notes' => 'Household of 4, two young children, need help with elderly care too.']);
 Booking::accept($b1);
 Booking::complete($b1);
-Review::create(['booking_id' => $b1, 'client_id' => $clients['nurul'], 'housemaid_id' => $hm['siti'], 'rating_reliability' => 5, 'rating_skill' => 4, 'rating_hygiene' => 5, 'rating_communication' => 5, 'comment' => 'Excellent with the kids, very punctual and tidy. Highly recommended.']);
+Review::create(['booking_id' => $b1, 'client_id' => $clients['nurul'], 'provider_type' => 'housemaid', 'provider_id' => $hm['siti'], 'rating_reliability' => 5, 'rating_skill' => 4, 'rating_hygiene' => 5, 'rating_communication' => 5, 'comment' => 'Excellent with the kids, very punctual and tidy. Highly recommended.']);
 Review::addAgencyResponse((int) getDB()->query("SELECT id FROM reviews WHERE booking_id = $b1")->fetchColumn(), $agencies['sinar_jaya'], "Thank you for the kind words, Nurul! We're proud of Siti's work.");
 
 // 2. Accepted / active placement.
-$b2 = Booking::create(['client_id' => $clients['weiling'], 'housemaid_id' => $hm['maria'], 'agency_id' => $agencies['sinar_jaya'], 'start_date' => '2026-06-01', 'end_date' => null, 'notes' => 'Live-in, caring for my elderly mother.']);
+$b2 = Booking::create(['client_id' => $clients['weiling'], 'provider_type' => 'housemaid', 'provider_id' => $hm['maria'], 'agency_id' => $agencies['sinar_jaya'], 'start_date' => '2026-06-01', 'end_date' => null, 'notes' => 'Live-in, caring for my elderly mother.']);
 Booking::accept($b2);
 
 // 3. Requested — sitting in the agency's pending queue.
-$b3 = Booking::create(['client_id' => $clients['rajesh'], 'housemaid_id' => $hm['dewi'], 'agency_id' => $agencies['harmoni'], 'start_date' => '2026-09-01', 'end_date' => null, 'notes' => 'Household of 3, need general housekeeping and cooking.']);
+$b3 = Booking::create(['client_id' => $clients['rajesh'], 'provider_type' => 'housemaid', 'provider_id' => $hm['dewi'], 'agency_id' => $agencies['harmoni'], 'start_date' => '2026-09-01', 'end_date' => null, 'notes' => 'Household of 3, need general housekeeping and cooking.']);
 
 // 4. Completed, reviewed — second review for variety.
-$b4 = Booking::create(['client_id' => $clients['michelle'], 'housemaid_id' => $hm['thida'], 'agency_id' => $agencies['kasih_sayang'], 'start_date' => '2025-10-01', 'end_date' => '2026-04-01', 'notes' => 'Caring for my grandmother, live-out arrangement.']);
+$b4 = Booking::create(['client_id' => $clients['michelle'], 'provider_type' => 'housemaid', 'provider_id' => $hm['thida'], 'agency_id' => $agencies['kasih_sayang'], 'start_date' => '2025-10-01', 'end_date' => '2026-04-01', 'notes' => 'Caring for my grandmother, live-out arrangement.']);
 Booking::accept($b4);
 Booking::complete($b4);
-Review::create(['booking_id' => $b4, 'client_id' => $clients['michelle'], 'housemaid_id' => $hm['thida'], 'rating_reliability' => 4, 'rating_skill' => 5, 'rating_hygiene' => 4, 'rating_communication' => 3, 'comment' => 'Very gentle and patient with my grandmother. Communication could be a bit clearer but overall a great experience.']);
+Review::create(['booking_id' => $b4, 'client_id' => $clients['michelle'], 'provider_type' => 'housemaid', 'provider_id' => $hm['thida'], 'rating_reliability' => 4, 'rating_skill' => 5, 'rating_hygiene' => 4, 'rating_communication' => 3, 'comment' => 'Very gentle and patient with my grandmother. Communication could be a bit clearer but overall a great experience.']);
 
 // 5. Declined.
-$b5 = Booking::create(['client_id' => $clients['nurul'], 'housemaid_id' => $hm['aye'], 'agency_id' => $agencies['sinar_jaya'], 'start_date' => '2026-08-20', 'end_date' => null, 'notes' => 'Short-term cover needed for 2 months.']);
+$b5 = Booking::create(['client_id' => $clients['nurul'], 'provider_type' => 'housemaid', 'provider_id' => $hm['aye'], 'agency_id' => $agencies['sinar_jaya'], 'start_date' => '2026-08-20', 'end_date' => null, 'notes' => 'Short-term cover needed for 2 months.']);
 Booking::decline($b5);
 
 // 6. Cancelled after acceptance.
-$b6 = Booking::create(['client_id' => $clients['weiling'], 'housemaid_id' => $hm['nimade'], 'agency_id' => $agencies['kasih_sayang'], 'start_date' => '2026-05-01', 'end_date' => null, 'notes' => 'Cooking-focused role.']);
+$b6 = Booking::create(['client_id' => $clients['weiling'], 'provider_type' => 'housemaid', 'provider_id' => $hm['nimade'], 'agency_id' => $agencies['kasih_sayang'], 'start_date' => '2026-05-01', 'end_date' => null, 'notes' => 'Cooking-focused role.']);
 Booking::accept($b6);
 Booking::cancel($b6, 'client', $clients['weiling']);
 Housemaid::setAvailability($hm['nimade'], 'on_leave'); // restore the on-leave state set above, since cancel() reverts to available
@@ -245,17 +263,104 @@ echo "  6 bookings (2 completed+reviewed, 1 accepted, 1 requested, 1 declined, 1
 
 echo "Seeding incidents (all four workflow states)...\n";
 
-Incident::create(['housemaid_id' => $hm['maria'], 'reported_by_type' => 'agency', 'reported_by_id' => $agencies['sinar_jaya'], 'incident_type' => 'other', 'description' => 'Client raised a minor punctuality concern during week 3 — flagging for visibility, not yet reviewed.', 'evidence_path' => null]);
+Incident::create(['provider_type' => 'housemaid', 'provider_id' => $hm['maria'], 'reported_by_type' => 'agency', 'reported_by_id' => $agencies['sinar_jaya'], 'incident_type' => 'other', 'description' => 'Client raised a minor punctuality concern during week 3 — flagging for visibility, not yet reviewed.', 'evidence_path' => null]);
 
-$incUnderReview = Incident::create(['housemaid_id' => $hm['dewi'], 'reported_by_type' => 'client', 'reported_by_id' => $clients['rajesh'], 'incident_type' => 'contract_breach', 'description' => 'Alleges agreed duties were not followed during a trial day. Admin is looking into it.', 'evidence_path' => null]);
+$incUnderReview = Incident::create(['provider_type' => 'housemaid', 'provider_id' => $hm['dewi'], 'reported_by_type' => 'client', 'reported_by_id' => $clients['rajesh'], 'incident_type' => 'contract_breach', 'description' => 'Alleges agreed duties were not followed during a trial day. Admin is looking into it.', 'evidence_path' => null]);
 Incident::markUnderReview($incUnderReview, $adminId);
 
-$incVerified = Incident::create(['housemaid_id' => $hm['siti'], 'reported_by_type' => 'agency', 'reported_by_id' => $agencies['sinar_jaya'], 'incident_type' => 'contract_breach', 'description' => 'Left a prior placement 2 weeks early without notice.', 'evidence_path' => null]);
+$incVerified = Incident::create(['provider_type' => 'housemaid', 'provider_id' => $hm['siti'], 'reported_by_type' => 'agency', 'reported_by_id' => $agencies['sinar_jaya'], 'incident_type' => 'contract_breach', 'description' => 'Left a prior placement 2 weeks early without notice.', 'evidence_path' => null]);
 Incident::verify($incVerified, $adminId);
 
-$incDismissed = Incident::create(['housemaid_id' => $hm['siti'], 'reported_by_type' => 'agency', 'reported_by_id' => $agencies['sinar_jaya'], 'incident_type' => 'other', 'description' => 'Unverified complaint, could not be substantiated.', 'evidence_path' => null]);
+$incDismissed = Incident::create(['provider_type' => 'housemaid', 'provider_id' => $hm['siti'], 'reported_by_type' => 'agency', 'reported_by_id' => $agencies['sinar_jaya'], 'incident_type' => 'other', 'description' => 'Unverified complaint, could not be substantiated.', 'evidence_path' => null]);
 Incident::dismiss($incDismissed, $adminId);
 
 echo "  4 incidents — 1 reported, 1 under review, 1 verified, 1 dismissed\n";
+
+echo "Seeding freelancers (Phase 7)...\n";
+
+function make_freelancer(array $core, array $servicePrices, array $locationNames, ?array $decision, bool $verified = true): int
+{
+    global $adminId;
+    $id = Freelancer::create($core);
+    if ($verified) {
+        Freelancer::markEmailPhoneVerified($id);
+    }
+    $services = [];
+    foreach ($servicePrices as $name => [$price, $unit]) {
+        $services[] = ['service_id' => service_id($name), 'price' => $price, 'price_unit' => $unit];
+    }
+    Freelancer::attachServices($id, $services);
+    Freelancer::attachLocations($id, array_map('location_id', $locationNames));
+    if ($decision === ['approve']) {
+        Freelancer::approve($id, $adminId);
+    } elseif ($decision && $decision[0] === 'reject') {
+        Freelancer::reject($id, $adminId, $decision[1]);
+    }
+    return $id;
+}
+
+$fl = [];
+
+$fl['aina'] = make_freelancer([
+    'email' => 'freelancer1@test.local', 'phone' => '+60112223333', 'password_hash' => $freelancerPass,
+    'full_name' => 'Nur Aina Zulkifli', 'photo_path' => null, 'date_of_birth' => '1990-02-18', 'gender' => 'female',
+    'nationality_country_id' => country_id('Malaysia'), 'marital_status' => 'married', 'religion' => 'Islam',
+    'passport_number' => null, 'passport_expiry' => null, 'work_permit_number' => null, 'work_permit_expiry' => null,
+    'national_id_number' => '900218-10-5566', 'home_address' => 'Setapak, Kuala Lumpur',
+    'emergency_contact_name' => 'Zulkifli Hassan', 'emergency_contact_phone' => '+60123334444',
+    'current_staying_address' => 'Setapak, Kuala Lumpur', 'years_experience' => 6,
+    'bank_name' => 'Maybank', 'bank_account_holder' => 'Nur Aina Zulkifli', 'bank_account_number' => '1122334455',
+], ['Full-Day Housekeeping' => [180.00, 'daily'], 'Cooking Service' => [25.00, 'hourly']],
+   ['Kuala Lumpur', 'Petaling Jaya', 'Ampang'], ['approve']);
+
+$fl['farhana'] = make_freelancer([
+    'email' => 'freelancer2@test.local', 'phone' => '+60113334444', 'password_hash' => $freelancerPass,
+    'full_name' => 'Farhana Idris', 'photo_path' => null, 'date_of_birth' => '1993-06-05', 'gender' => 'female',
+    'nationality_country_id' => country_id('Indonesia'), 'marital_status' => 'single', 'religion' => 'Islam',
+    'passport_number' => 'A7788990', 'passport_expiry' => '2029-01-10', 'work_permit_number' => 'WP-112288',
+    'work_permit_expiry' => '2027-06-01', 'national_id_number' => 'ID-990011',
+    'home_address' => 'Yogyakarta, Indonesia', 'emergency_contact_name' => 'Idris Wibowo',
+    'emergency_contact_phone' => '+6281255667788', 'current_staying_address' => 'Subang Jaya, Selangor',
+    'years_experience' => 4, 'bank_name' => 'CIMB Bank', 'bank_account_holder' => 'Farhana Idris',
+    'bank_account_number' => '7001234567',
+], ['Deep Cleaning' => [150.00, 'per_job'], 'Part-Time Cleaning (Hourly)' => [20.00, 'hourly']],
+   ['Subang Jaya', 'Shah Alam', 'Klang'], ['approve']);
+// One requested + one accepted booking, so the freelancer dashboard has
+// something in her own "incoming requests" queue.
+$b7 = Booking::create(['client_id' => $clients['rajesh'], 'provider_type' => 'freelancer', 'provider_id' => $fl['farhana'], 'service_id' => service_id('Deep Cleaning'), 'start_date' => '2026-09-10', 'end_date' => '2026-09-11', 'notes' => 'Move-in deep clean for a 3-bedroom condo.']);
+$b8 = Booking::create(['client_id' => $clients['michelle'], 'provider_type' => 'freelancer', 'provider_id' => $fl['farhana'], 'service_id' => service_id('Part-Time Cleaning (Hourly)'), 'start_date' => '2026-08-25', 'end_date' => null, 'notes' => 'Weekly 4-hour cleaning slot.']);
+Booking::accept($b8);
+Booking::complete($b8);
+Review::create(['booking_id' => $b8, 'client_id' => $clients['michelle'], 'provider_type' => 'freelancer', 'provider_id' => $fl['farhana'], 'rating_reliability' => 5, 'rating_skill' => 5, 'rating_hygiene' => 5, 'rating_communication' => 4, 'comment' => 'Thorough and fast — will book again.']);
+
+// Pending Admin approval, already self-verified — populates the
+// freelancer approval queue distinctly from the "not verified yet" case.
+$fl['liyana'] = make_freelancer([
+    'email' => 'freelancer3@test.local', 'phone' => '+60114445555', 'password_hash' => $freelancerPass,
+    'full_name' => 'Liyana Shah', 'photo_path' => null, 'date_of_birth' => '1996-09-22', 'gender' => 'female',
+    'nationality_country_id' => country_id('Malaysia'), 'marital_status' => 'single', 'religion' => 'Islam',
+    'passport_number' => null, 'passport_expiry' => null, 'work_permit_number' => null, 'work_permit_expiry' => null,
+    'national_id_number' => '960922-01-4433', 'home_address' => 'Johor Bahru, Johor',
+    'emergency_contact_name' => 'Shah Rahman', 'emergency_contact_phone' => '+60127778888',
+    'current_staying_address' => 'Johor Bahru, Johor', 'years_experience' => 3,
+    'bank_name' => 'Public Bank', 'bank_account_holder' => 'Liyana Shah', 'bank_account_number' => '3344556677',
+], ['Babysitting / Childcare' => [15.00, 'hourly'], 'Elderly Care' => [160.00, 'daily']],
+   ['Johor Bahru', 'Kulai'], null, true);
+
+// Rejected — shows the rejection-reason flow on the freelancer side too.
+$fl['weimei'] = make_freelancer([
+    'email' => 'freelancer4@test.local', 'phone' => '+60115556666', 'password_hash' => $freelancerPass,
+    'full_name' => 'Wong Wei Mei', 'photo_path' => null, 'date_of_birth' => '1991-11-30', 'gender' => 'female',
+    'nationality_country_id' => country_id('Malaysia'), 'marital_status' => 'married', 'religion' => null,
+    'passport_number' => null, 'passport_expiry' => null, 'work_permit_number' => null, 'work_permit_expiry' => null,
+    'national_id_number' => '911130-07-2211', 'home_address' => 'George Town, Penang',
+    'emergency_contact_name' => 'Tan Wei Kong', 'emergency_contact_phone' => '+60129990000',
+    'current_staying_address' => 'George Town, Penang', 'years_experience' => 2,
+    'bank_name' => 'Hong Leong Bank', 'bank_account_holder' => 'Wong Wei Mei', 'bank_account_number' => '5566778899',
+], ['Pet Care' => [50.00, 'per_job'], 'Laundry & Ironing' => [12.00, 'hourly']],
+   ['George Town', 'Bukit Mertajam'],
+   ['reject', 'National ID does not match the name on file — please resubmit with matching documents.']);
+
+echo "  4 freelancers (2 approved+bookable, 1 pending Admin review, 1 rejected), 2 freelancer bookings (1 requested, 1 completed+reviewed)\n";
 
 echo "\nDone. Demo dataset ready.\n";

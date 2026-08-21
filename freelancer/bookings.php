@@ -1,13 +1,13 @@
 <?php
 require_once __DIR__ . '/../includes/bootstrap.php';
-require_role('agency');
+require_role('freelancer');
 
-$agencyId = current_id();
+$freelancerId = current_id();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
     $id = (int) ($_POST['booking_id'] ?? 0);
-    $booking = Booking::findByIdForAgency($id, $agencyId);
+    $booking = Booking::findByIdForFreelancer($id, $freelancerId);
     if ($booking) {
         $action = $_POST['action'] ?? '';
         if ($action === 'accept' && $booking['status'] === 'requested') {
@@ -20,15 +20,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Booking::complete($id);
             flash('success', 'Booking marked completed — the client can now leave a review.');
         } elseif ($action === 'cancel' && in_array($booking['status'], ['requested', 'accepted'], true)) {
-            Booking::cancel($id, 'agency', $agencyId);
+            Booking::cancel($id, 'freelancer', $freelancerId);
             flash('success', 'Booking cancelled.');
         }
     }
-    redirect(rtrim(APP_URL, '/') . '/agency/bookings.php');
+    redirect(rtrim(APP_URL, '/') . '/freelancer/bookings.php');
 }
 
 $status = $_GET['status'] ?? '';
-$bookings = Booking::listByAgency($agencyId, $status ?: null);
+$bookings = Booking::listByFreelancer($freelancerId, $status ?: null);
 
 $pageTitle = 'Bookings';
 require __DIR__ . '/../includes/header.php';
@@ -54,15 +54,15 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Housemaid</th><th>Client</th><th>Dates</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Client</th><th>Service</th><th>Dates</th><th>Status</th><th></th></tr></thead>
             <tbody>
                 <?php if (!$bookings): ?>
                 <tr><td colspan="5" class="muted">No bookings yet.</td></tr>
                 <?php endif; ?>
                 <?php foreach ($bookings as $b): ?>
                 <tr>
-                    <td><a href="<?= e(rtrim(APP_URL, '/')) ?>/agency/housemaid_view.php?id=<?= (int) $b['provider_id'] ?>"><?= e($b['provider_name']) ?></a></td>
                     <td><?= e($b['client_name']) ?><br><span class="muted"><?= e($b['client_phone']) ?></span></td>
+                    <td><?= e($b['service_name']) ?></td>
                     <td class="muted"><?= fmt_date($b['start_date']) ?><?= $b['end_date'] ? ' – ' . fmt_date($b['end_date']) : '' ?></td>
                     <td><span class="pill <?= $b['status'] === 'requested' ? 'pending' : ($b['status'] === 'completed' || $b['status'] === 'accepted' ? 'approved' : 'rejected') ?>"><?= e(ucfirst($b['status'])) ?></span></td>
                     <td class="actions">

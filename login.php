@@ -53,6 +53,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        $freelancer = Freelancer::findByEmail($email);
+        if ($freelancer && password_verify($password, $freelancer['password_hash'])) {
+            $validCredentials = true;
+            if (!Freelancer::isVerified($freelancer)) {
+                $_SESSION['pending_freelancer_id'] = (int) $freelancer['id'];
+                redirect(rtrim(APP_URL, '/') . '/freelancer/verify.php');
+            } else {
+                login_as('freelancer', (int) $freelancer['id'], $freelancer['full_name']);
+                redirect(dashboard_url_for('freelancer'));
+            }
+        }
+
         if (!$validCredentials) {
             record_failed_login($email);
             $errors[] = 'Incorrect email or password.';
@@ -87,7 +99,8 @@ require __DIR__ . '/includes/header.php';
 
         <div class="auth-links">
             Looking to hire? <a href="<?= e(rtrim(APP_URL, '/')) ?>/client/register.php">Create a client account</a><br>
-            Housemaid agency? <a href="<?= e(rtrim(APP_URL, '/')) ?>/agency/register.php">Register here</a>
+            Housemaid agency? <a href="<?= e(rtrim(APP_URL, '/')) ?>/agency/register.php">Register here</a><br>
+            Independent housemaid? <a href="<?= e(rtrim(APP_URL, '/')) ?>/freelancer/register.php">Register as a freelancer</a>
         </div>
     </div>
 </div>

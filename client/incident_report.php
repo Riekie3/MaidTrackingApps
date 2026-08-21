@@ -3,13 +3,24 @@ require_once __DIR__ . '/../includes/bootstrap.php';
 require_role('client');
 
 $clientId = current_id();
-$housemaidId = (int) ($_GET['housemaid_id'] ?? $_POST['housemaid_id'] ?? 0);
-$hm = Housemaid::publicFindById($housemaidId);
+// housemaid_id kept for backward compatibility with existing links —
+// provider_type/provider_id is the general form, used for freelancers too.
+$providerType = $_GET['provider_type'] ?? $_POST['provider_type'] ?? 'housemaid';
+$providerType = in_array($providerType, ['housemaid', 'freelancer'], true) ? $providerType : 'housemaid';
+$providerId = (int) ($_GET['provider_id'] ?? $_POST['provider_id'] ?? $_GET['housemaid_id'] ?? $_POST['housemaid_id'] ?? 0);
 
-// Only a client who actually had a placement with her can file a report
+$provider = $providerType === 'freelancer'
+    ? Freelancer::publicFindById($providerId)
+    : Housemaid::publicFindById($providerId);
+$providerName = $provider['full_name'] ?? null;
+$profileUrl = $providerType === 'freelancer'
+    ? rtrim(APP_URL, '/') . '/client/freelancer.php?id=' . $providerId
+    : rtrim(APP_URL, '/') . '/client/candidate.php?id=' . $providerId;
+
+// Only a client who actually had a booking with her can file a report
 // against her — prevents drive-by defamation from someone who never hired her.
-if (!$hm || !Booking::hasQualifyingBooking($clientId, $housemaidId)) {
-    flash('error', 'You can only report an incident for a housemaid you\'ve had a booking with.');
+if (!$provider || !Booking::hasQualifyingBooking($clientId, $providerType, $providerId)) {
+    flash('error', 'You can only report an incident for someone you\'ve had a booking with.');
     redirect(rtrim(APP_URL, '/') . '/client/bookings.php');
 }
 
@@ -27,7 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errors) {
         $evidence = handle_upload('evidence', UPLOAD_INCIDENT_DIR);
         Incident::create([
-            'housemaid_id' => $housemaidId,
+            'provider_type' => $providerType,
+            'provider_id' => $providerId,
             'reported_by_type' => 'client',
             'reported_by_id' => $clientId,
             'incident_type' => $type,
@@ -35,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'evidence_path' => $evidence,
         ]);
         flash('success', 'Report filed. Admin will review it before it appears anywhere public.');
-        redirect(rtrim(APP_URL, '/') . '/client/candidate.php?id=' . $housemaidId);
+        redirect($profileUrl);
     }
 }
 
@@ -46,7 +58,7 @@ require __DIR__ . '/../includes/header.php';
     <div class="page-head">
         <div>
             <h1>Report an incident</h1>
-            <p>For <strong><?= e($hm['full_name']) ?></strong>. Admin reviews every report before it's ever shown publicly.</p>
+            <p>For <strong><?= e($providerName) ?></strong>. Admin reviews every report before it's ever shown publicly.</p>
         </div>
     </div>
 
@@ -56,7 +68,8 @@ require __DIR__ . '/../includes/header.php';
 
     <form method="post" enctype="multipart/form-data">
         <?= csrf_field() ?>
-        <input type="hidden" name="housemaid_id" value="<?= (int) $housemaidId ?>">
+        <input type="hidden" name="provider_type" value="<?= e($providerType) ?>">
+        <input type="hidden" name="provider_id" value="<?= (int) $providerId ?>">
         <div class="field">
             <label for="incident_type">Type</label>
             <select id="incident_type" name="incident_type" required>
@@ -76,7 +89,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div class="btn-row">
             <button type="submit" class="btn btn-primary">Submit report</button>
-            <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/client/candidate.php?id=<?= (int) $housemaidId ?>">Cancel</a>
+            <a class="btn btn-outline" href="<?= e($profileUrl) ?>">Cancel</a>
         </div>
     </form>
 </div>

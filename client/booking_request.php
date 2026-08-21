@@ -24,7 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errors) {
         $id = Booking::create([
             'client_id' => $clientId,
-            'housemaid_id' => $housemaidId,
+            'provider_type' => 'housemaid',
+            'provider_id' => $housemaidId,
             'agency_id' => $hm['agency_id'],
             'start_date' => $startDate,
             'end_date' => $endDate ?: null,

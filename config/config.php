@@ -21,9 +21,9 @@ $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 // a literal backslash into every generated URL.
 $scriptDir = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
 $scriptDir = substr($scriptDir, 0, strrpos($scriptDir, '/'));
-// Pages under /admin, /agency, or /client need the app root, not their own folder.
+// Pages under /admin, /agency, /client, or /freelancer need the app root, not their own folder.
 $lastSegment = substr($scriptDir, strrpos($scriptDir, '/') + 1);
-if (in_array($lastSegment, ['admin', 'agency', 'client'], true)) {
+if (in_array($lastSegment, ['admin', 'agency', 'client', 'freelancer'], true)) {
     $scriptDir = substr($scriptDir, 0, strrpos($scriptDir, '/'));
 }
 define('APP_URL', $scheme . '://' . $host . $scriptDir);
@@ -37,6 +37,7 @@ define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('UPLOAD_TMP_DIR', __DIR__ . '/../uploads/tmp/');
 define('UPLOAD_HOUSEMAID_DIR', __DIR__ . '/../uploads/housemaids/');
 define('UPLOAD_AGENCY_DIR', __DIR__ . '/../uploads/agencies/');
+define('UPLOAD_FREELANCER_DIR', __DIR__ . '/../uploads/freelancers/');
 define('UPLOAD_INCIDENT_DIR', __DIR__ . '/../uploads/incidents/');
 define('UPLOAD_MAX_SIZE', 10 * 1024 * 1024); // 10MB
 define('UPLOAD_ALLOWED_TYPES', ['pdf', 'jpg', 'jpeg', 'png']);

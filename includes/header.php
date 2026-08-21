@@ -48,6 +48,7 @@ $base = rtrim(APP_URL, '/');
                 <a href="<?= e($base) ?>/admin/index.php">Dashboard</a>
                 <a href="<?= e($base) ?>/admin/agencies_pending.php">Agencies</a>
                 <a href="<?= e($base) ?>/admin/housemaids_pending.php">Housemaids</a>
+                <a href="<?= e($base) ?>/admin/freelancers_pending.php">Freelancers</a>
                 <a href="<?= e($base) ?>/admin/incidents.php">Incidents</a>
                 <a href="<?= e($base) ?>/admin/master_data.php">Master Data</a>
                 <a href="<?= e($base) ?>/admin/report_overview.php">Reports</a>
@@ -67,6 +68,14 @@ $base = rtrim(APP_URL, '/');
             <div class="nav-links">
                 <a href="<?= e($base) ?>/client/browse.php">Browse</a>
                 <a href="<?= e($base) ?>/client/bookings.php">My Bookings</a>
+                <a class="signout" href="<?= e($base) ?>/logout.php">Sign out</a>
+            </div>
+            <?php elseif ($role === 'freelancer'): ?>
+            <div class="nav-links">
+                <a href="<?= e($base) ?>/freelancer/index.php">Dashboard</a>
+                <a href="<?= e($base) ?>/freelancer/profile.php">Profile</a>
+                <a href="<?= e($base) ?>/freelancer/services.php">Services</a>
+                <a href="<?= e($base) ?>/freelancer/bookings.php">Bookings</a>
                 <a class="signout" href="<?= e($base) ?>/logout.php">Sign out</a>
             </div>
             <?php endif; ?>

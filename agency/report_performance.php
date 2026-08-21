@@ -10,7 +10,7 @@ $repeatRate = Booking::repeatClientRate($agencyId);
 $placements = Booking::monthlyPlacements($agencyId, 6);
 
 $incidentStmt = getDB()->prepare(
-    "SELECT COUNT(*) FROM incidents i JOIN housemaids h ON h.id = i.housemaid_id
+    "SELECT COUNT(*) FROM incidents i JOIN housemaids h ON h.id = i.provider_id AND i.provider_type = 'housemaid'
      WHERE h.agency_id = ? AND i.status = 'verified'"
 );
 $incidentStmt->execute([$agencyId]);
