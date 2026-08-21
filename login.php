@@ -98,7 +98,6 @@ require __DIR__ . '/includes/header.php';
         </form>
 
         <div class="auth-links">
-            Looking to hire? <a href="<?= e(rtrim(APP_URL, '/')) ?>/client/register.php">Create a client account</a><br>
             Housemaid agency? <a href="<?= e(rtrim(APP_URL, '/')) ?>/agency/register.php">Register here</a><br>
             Independent housemaid? <a href="<?= e(rtrim(APP_URL, '/')) ?>/freelancer/register.php">Register as a freelancer</a>
         </div>

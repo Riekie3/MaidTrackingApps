@@ -22,9 +22,9 @@ require __DIR__ . '/includes/header.php';
     <p class="muted">A housemaid agency records &amp; trust platform. Agencies manage verified rosters; Admin approves every registration and every housemaid before she's ever visible to a client.</p>
 
     <div class="btn-row" style="margin:24px 0 40px;">
-        <a class="btn btn-primary" href="<?= e(rtrim(APP_URL, '/')) ?>/login.php">Log in</a>
         <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/client/register.php">I'm looking to hire</a>
         <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/agency/register.php">Register your agency</a>
+        <a class="btn btn-outline" href="<?= e(rtrim(APP_URL, '/')) ?>/freelancer/register.php">Register as a freelancer</a>
     </div>
 
     <?php if (!$dbOk || $tableCount === 0): ?>
