@@ -14,7 +14,7 @@ Full scope, role breakdown, and design decisions live in the platform
 proposal shared with the project owner — this README covers what's
 actually built and how to run it.
 
-## Status: Phase 5 — Live on Cloudflare Tunnel, cPanel deploy on hold
+## Status: Phase 7 — Freelancer Marketplace (Phase 5 still live on Cloudflare, cPanel deploy on hold)
 
 Working now:
 - Full database schema (`database/schema.sql`) — agencies, admins, clients,
@@ -114,6 +114,19 @@ Working now:
 - **Dark mode is opt-in, not automatic** — no longer follows the OS/
   browser preference; light is always the default until the header
   toggle is clicked, on the project owner's instruction.
+- **Freelancer Marketplace (Phase 7)** — a fourth login for independent
+  housemaids who represent themselves instead of going through an
+  agency. Self-registers like an Agency (Pending → Admin approval) but
+  also verifies her own email/phone like a Client, since no agency
+  vouches for her first. Admin-managed service catalog (10 seeded) and
+  a nationwide location catalog (76 cities across all 13 states + 3
+  federal territories, grouped by state in the picker) — a freelancer
+  sets her own price per service and picks which areas she covers.
+  Client Browse gets an Agency/Freelancer tab; booking a freelancer
+  asks for a service and a date range, and routes directly to her with
+  no agency in between. See the Platform Proposal's §10 for the full
+  design, including the polymorphic `provider_type`/`provider_id`
+  schema decision on `bookings`/`reviews`/`incidents`.
 
 Not built yet (next phases):
 - **Phase 5, remainder** — actual cPanel hosting, on hold until the
@@ -131,10 +144,12 @@ Not built yet (next phases):
    then either:
    - Use the "Import" tab to import, **in this order**: `database/schema.sql`,
      `database/seed_master_data.sql`, `database/seed_admin.sql`,
-     `database/migrate_phase2.sql`, `database/migrate_phase4.sql`
+     `database/migrate_phase2.sql`, `database/migrate_phase4.sql`,
+     `database/migrate_phase7.sql`, `database/seed_master_data_phase7.sql`
      (every phase that needs a schema change ships its own
-     `migrate_phaseN.sql`, run in phase order — there's no `migrate_phase3.sql`,
-     Phase 3 didn't need one), **or**
+     `migrate_phaseN.sql`, run in phase order — there's no `migrate_phase3.sql`
+     or `migrate_phase5.sql`/`migrate_phase6.sql`, those phases didn't need
+     schema changes), **or**
    - Run from a terminal:
      ```bash
      mysql -u root < database/schema.sql
@@ -142,6 +157,8 @@ Not built yet (next phases):
      mysql -u root maidtrack < database/seed_admin.sql
      mysql -u root maidtrack < database/migrate_phase2.sql
      mysql -u root maidtrack < database/migrate_phase4.sql
+     mysql -u root maidtrack < database/migrate_phase7.sql
+     mysql -u root maidtrack < database/seed_master_data_phase7.sql
      ```
 4. **Set up config.** Copy both example files:
    - `config/database.example.php` → `config/database.php`. Defaults match
@@ -159,11 +176,14 @@ Not built yet (next phases):
    php scripts/seed_demo_data.php
    ```
    Creates 4 agencies, 8 housemaids (every approval/availability state),
-   4 clients, 6 bookings, 2 reviews, and all 4 incident-workflow states —
-   run through the real models (not raw SQL), so passport encryption and
-   password hashing both work regardless of your local
-   `config/secrets.php` key. Full login list in `CREDENTIALS.md` and the
-   Phase Plan document's "Live Demo Credentials" section.
+   4 clients, 6 bookings, 2 reviews, all 4 incident-workflow states, and
+   (Phase 7) 4 freelancers — 2 approved and bookable, 1 pending Admin
+   review, 1 rejected — plus 2 freelancer bookings covering the
+   requested and completed+reviewed states. Run through the real models
+   (not raw SQL), so passport/bank encryption and password hashing both
+   work regardless of your local `config/secrets.php` key. Full login
+   list in `CREDENTIALS.md` and the Phase Plan document's "Live Demo
+   Credentials" section.
 6. **Open the app**: `http://localhost/MaidTrackingApps/` — you'll land
    on the login page. Admin credentials are in `CREDENTIALS.md`
    (gitignored, local only — not in this repo). Without the demo seed,
