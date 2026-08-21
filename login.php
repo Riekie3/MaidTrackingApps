@@ -96,11 +96,6 @@ require __DIR__ . '/includes/header.php';
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%;">Log in</button>
         </form>
-
-        <div class="auth-links">
-            Housemaid agency? <a href="<?= e(rtrim(APP_URL, '/')) ?>/agency/register.php">Register here</a><br>
-            Independent housemaid? <a href="<?= e(rtrim(APP_URL, '/')) ?>/freelancer/register.php">Register as a freelancer</a>
-        </div>
     </div>
 </div>
 <?php require __DIR__ . '/includes/footer.php'; ?>
